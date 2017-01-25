@@ -33,28 +33,17 @@ mocks_clear() {
     done
 }
 
-autogen_subdir_cleanup() {
-	DIR="$1"
-
-	FILE=${DIR}/*
-	for FILE in $(ls FILES); do
-		if [ -d $FILE ]; then
-			autogen_subdir_cleanup $FILE
-		else
-			add_license $FILE $DIR
-		fi
-	done
-}
-
 autogen_cleanup() {
     DIR="$1"
 
     FILES=${DIR}/*
     for FILE in $(ls $FILES);
     do
-				if [ -d $FILE ]; then
-					autogen_subdir_cleanup $FILE
-				fi
+      if [ -d $FILE ]; then
+        autogen_cleanup $FILE
+      else
+        add_license $FILE $DIR
+      fi
     done
 }
 
