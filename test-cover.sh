@@ -18,7 +18,10 @@ do
   fi
 done
 
-NPROC=$(getconf _NPROCESSORS_ONLN)
+if [ "$NPROC" = "" ]; then
+  NPROC=$(getconf _NPROCESSORS_ONLN)
+fi
+
 echo "test-cover begin: concurrency $NPROC"
 go run .ci/gotestcover/gotestcover.go -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $DIRS | tee $LOG
 
