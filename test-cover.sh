@@ -23,7 +23,7 @@ if [ "$NPROC" = "" ]; then
 fi
 
 echo "test-cover begin: concurrency $NPROC"
-go run .ci/gotestcover/gotestcover.go -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $DIRS | tee $LOG
+go run .ci/gotestcover/gotestcover.go -timeout 1m -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $DIRS | tee $LOG
 
 TEST_EXIT=${PIPESTATUS[0]}
 
