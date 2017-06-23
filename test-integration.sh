@@ -5,6 +5,7 @@ set -e
 
 TAGS="integration"
 DIR="integration"
+INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
 
 # compile the integration test binary
 go test -test.c -test.tags=${TAGS} ./${DIR}
@@ -14,7 +15,7 @@ TESTS=$(./integration.test -test.v -test.short | grep RUN | tr -s " " | cut -d '
 
 # execute tests one by one for isolation
 for TEST in $TESTS; do
-  ./integration.test -test.v -test.run $TEST ./integration
+  ./integration.test -test.v -test.run $TEST -test.timeout $INTEGRATION_TIMEOUT ./integration
   TEST_EXIT=$?
   if [ "$TEST_EXIT" != "0" ]; then
     echo "$TEST failed"
