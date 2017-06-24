@@ -18,12 +18,14 @@ do
   fi
 done
 
+pick_subset "$DIRS" $UNIT_TEST_NUM $UNIT_TEST_TOTAL TESTS
+
 if [ "$NPROC" = "" ]; then
   NPROC=$(getconf _NPROCESSORS_ONLN)
 fi
 
 echo "test-cover begin: concurrency $NPROC"
-go run .ci/gotestcover/gotestcover.go -timeout 1m -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $DIRS | tee $LOG
+go run .ci/gotestcover/gotestcover.go -timeout 1m -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $TESTS | tee $LOG
 
 TEST_EXIT=${PIPESTATUS[0]}
 
