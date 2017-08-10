@@ -16,4 +16,4 @@ if [[ ! -f $exclude_file ]]; then
   exit 1
 fi
 
-! gometalinter --config $config_file --vendor ${additional_args} ./... | egrep -v -f $exclude_file
+! gometalinter --config $config_file --vendor "${additional_args}" ./... | egrep -v -f $exclude_file
