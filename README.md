@@ -9,3 +9,5 @@ Repositories using this package are expected to the following conventions:
   - make targets suffixed with `-linux-amd64` for each binary target
   - make creates builds under the same name as the make targets under a new sub-folder: `bin`
   - make target 'all' runs all tests, and builds all binaries
+
+Consult (GUIDELINE.md)[https://github.com/m3db/ci-scripts/blob/master/GUIDELINE.md] for more detailed usage information.
