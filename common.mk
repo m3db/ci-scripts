@@ -10,5 +10,6 @@ install-ci:
 	make install-vendor
 
 install-metalinter:
-	@which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && gometalinter --install)
+	@which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && \
+		go install github.com/alecthomas/gometalinter && gometalinter --install)
 	@which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
