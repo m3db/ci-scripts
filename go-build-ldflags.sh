@@ -1,6 +1,11 @@
 #!/bin/sh
 
-PROJECT_PACKAGE=$0
+PROJECT_PACKAGE=$1
+
+if [ "$PROJECT_PACKAGE" = "" ]; then
+  echo "Missing project package as first arg to $0"
+  exit 1
+fi
 
 GIT_REVISION=$(git rev-parse --short HEAD)
 GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
