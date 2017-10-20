@@ -23,11 +23,30 @@ if [ "$NPROC" = "" ]; then
 fi
 
 echo "test-cover begin: concurrency $NPROC"
-go run .ci/gotestcover/gotestcover.go -timeout 5m -race -covermode=atomic -coverprofile=profile.tmp -v -parallelpackages $NPROC $DIRS | tee $LOG
 
+PROFILE_REG="profile_reg.tmp"
+PROFILE_BIG="profile_big.tmp"
+
+TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
+go run .ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
 TEST_EXIT=${PIPESTATUS[0]}
 
-cat profile.tmp | grep -v "_mock.go" > $TARGET
+# run big tests one by one
+echo "test-cover begin: concurrency 1, +big"
+for DIR in $DIRS; do
+  if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
+    go test $TEST_FLAGS -tags noparallel -coverprofile $PROFILE_BIG $DIR | tee $LOG
+    TEST_EXIT=${PIPESTATUS[0]}
+    if [ "$TEST_EXIT" != "0" ]; then
+      continue
+    fi
+    if [ -s $PROFILE_BIG ]; then
+      cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
+    fi
+  fi
+done
+
+cat $PROFILE_REG | grep -v "_mock.go" > $TARGET
 
 find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
 echo "test-cover result: $TEST_EXIT"
