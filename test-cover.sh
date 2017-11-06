@@ -41,7 +41,7 @@ if [ "$TEST_EXIT" = "0" ]; then
       go test $TEST_FLAGS -tags noparallel -coverprofile $PROFILE_BIG $DIR | tee $LOG
       TEST_EXIT=${PIPESTATUS[0]}
       if [ "$TEST_EXIT" != "0" ]; then
-        continue
+        break
       fi
       if [ -s $PROFILE_BIG ]; then
         cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
