@@ -12,7 +12,7 @@ install-glide:
 install-ci:
 	make install-vendor
 
-install-metalinter-internal:
+install-metalinter:
 	@which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && \
 		cd $(GOPATH)/src/github.com/alecthomas/gometalinter && \
 		git checkout $(metalinter_version) && \
