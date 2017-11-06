@@ -39,9 +39,12 @@ if [ "$TEST_EXIT" = "0" ]; then
   for DIR in $DIRS; do
     if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
       go test $TEST_FLAGS -tags noparallel -coverprofile $PROFILE_BIG $DIR | tee $LOG
-      TEST_EXIT=${PIPESTATUS[0]}
-      if [ "$TEST_EXIT" != "0" ]; then
-        break
+      # Only set TEST_EXIT if its already zero to be prevent overwriting non-zero exit codes
+      if [ "$TEST_EXIT" = "0" ]; then
+        TEST_EXIT=${PIPESTATUS[0]}
+      fi
+      if [ "${PIPESTATUS[0]}" != "0" ]; then
+        continue
       fi
       if [ -s $PROFILE_BIG ]; then
         cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
