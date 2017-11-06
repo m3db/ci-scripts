@@ -31,20 +31,24 @@ TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
 go run .ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
 TEST_EXIT=${PIPESTATUS[0]}
 
-# run big tests one by one
-echo "test-cover begin: concurrency 1, +big"
-for DIR in $DIRS; do
-  if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
-    go test $TEST_FLAGS -tags noparallel -coverprofile $PROFILE_BIG $DIR | tee $LOG
-    TEST_EXIT=${PIPESTATUS[0]}
-    if [ "$TEST_EXIT" != "0" ]; then
-      continue
+# Only run additional tests if previous tests exited clean so we don't overwrite
+# the TEST_EXIT variable
+if [ "$TEST_EXIT" = "0" ]; then
+  # run big tests one by one
+  echo "test-cover begin: concurrency 1, +big"
+  for DIR in $DIRS; do
+    if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
+      go test $TEST_FLAGS -tags noparallel -coverprofile $PROFILE_BIG $DIR | tee $LOG
+      TEST_EXIT=${PIPESTATUS[0]}
+      if [ "$TEST_EXIT" != "0" ]; then
+        continue
+      fi
+      if [ -s $PROFILE_BIG ]; then
+        cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
+      fi
     fi
-    if [ -s $PROFILE_BIG ]; then
-      cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
-    fi
-  fi
-done
+  done
+fi
 
 cat $PROFILE_REG | grep -v "_mock.go" > $TARGET
 
