@@ -15,4 +15,5 @@ install-metalinter:
 	@which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
 
 install-linter-maptime:
-	@which maptime > /dev/null || (go get -u github.com/m3db/build-tools/linters/maptime && go install github.com/alecthomas/gometalinter)
+	@which maptime > /dev/null || (go get -u github.com/m3db/build-tools/linters/maptime && \
+		go install github.com/m3db/build-tools/linters/maptime)
