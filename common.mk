@@ -1,5 +1,5 @@
 metalinter_version  := 0262fb20957a4c2d3bb7c834a6a125ae3884a2c6
-badtime_version     := d5c312d05ed78e5032805b9eb5acb37ae13d8d91
+badtime_version     := d5c312d05ed78e5032805b9eb5acb37ae13d8d91>>>>>>> Update badtime
 
 install-vendor: install-glide
 	@echo Installing glide deps
