@@ -1,5 +1,5 @@
-metalinter_version 	:= 0262fb20957a4c2d3bb7c834a6a125ae3884a2c6
-maptime_version 		:= a3f8910440bba296b90fd559b425009981c8bcb8
+metalinter_version  := 0262fb20957a4c2d3bb7c834a6a125ae3884a2c6
+badtime_version     := d5c312d05ed78e5032805b9eb5acb37ae13d8d91
 
 install-vendor: install-glide
 	@echo Installing glide deps
@@ -19,8 +19,8 @@ install-metalinter:
 		go install && gometalinter --install)
 	@which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
 
-install-linter-maptime:
-	@which maptime > /dev/null || (go get -u github.com/m3db/build-tools/linters/maptime && \
-		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/maptime && \
-		git checkout $(maptime_version) && go install)
-	@which maptime > /dev/null || (echo "maptime install failed" && exit 1)
+install-linter-badtime:
+	@which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
+		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
+		git checkout $(badtime_version) && go install)
+	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
