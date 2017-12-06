@@ -1,4 +1,4 @@
-metalinter_version  := 0262fb20957a4c2d3bb7c834a6a125ae3884a2c6
+metalinter_version  := v2.0.0
 badtime_version     := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
 
 install-vendor: install-glide
