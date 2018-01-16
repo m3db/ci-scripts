@@ -1,5 +1,14 @@
-metalinter_version  := v2.0.0
-badtime_version     := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
+metalinter_version   := v2.0.0
+badtime_version      := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
+coverfile            := cover.out
+coverage_xml         := coverage.xml
+coverage_html        := coverage.html
+junit_xml            := junit.xml
+convert_test_data    := .ci/convert-test-data.sh
+test                 := .ci/test-cover.sh
+test_one_integration := .ci/test-one-integration.sh
+test_ci_integration  := .ci/test-integration.sh
+test_log             := test.log
 
 install-vendor: install-glide
 	@echo Installing glide deps
@@ -24,3 +33,31 @@ install-linter-badtime:
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
 		git checkout $(badtime_version) && go install)
 	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
+
+test-base:
+	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
+	$(test) $(coverfile) | tee $(test_log)
+
+test-base-xml: test-base
+	go-junit-report < $(test_log) > $(junit_xml)
+	gocov convert $(coverfile) | gocov-xml > $(coverage_xml)
+	@$(convert_test_data) $(coverage_xml)
+	@rm $(coverfile) &> /dev/null
+
+test-base-html: test-base
+	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (which open && open $(coverage_html))
+	@rm -f $(test_log) &> /dev/null
+
+test-base-integration:
+	go test -v -tags=integration ./integration
+
+# Usage: make test-base-single-integration name=<test_name>
+test-base-single-integration:
+	$(test_one_integration) $(name)
+
+test-base-ci-unit: test-base
+	@which goveralls > /dev/null || go get -u -f github.com/mattn/goveralls
+	goveralls -coverprofile=$(coverfile) -service=travis-ci || (echo -e "Coveralls failed" && exit 1)
+
+test-base-ci-integration:
+	$(test_ci_integration)
