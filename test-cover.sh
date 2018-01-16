@@ -45,7 +45,7 @@ for DIR in $DIRS; do
       continue
     fi
     if [ -s $PROFILE_BIG ]; then
-      cat $PROFILE_BIG | tail -n +1 >> $PROFILE_REG
+      cat $PROFILE_BIG | tail -n +2 >> $PROFILE_REG
     fi
   fi
 done
