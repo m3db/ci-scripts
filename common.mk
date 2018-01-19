@@ -56,8 +56,8 @@ test-base-single-integration:
 	$(test_one_integration) $(name)
 
 test-base-ci-unit: test-base
-	@which goveralls > /dev/null || go get -u -f github.com/mattn/goveralls
-	goveralls -coverprofile=$(coverfile) -service=travis-ci || (echo -e "Coveralls failed" && exit 1)
+	@which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
+	goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
 test-base-ci-integration:
 	$(test_ci_integration)
