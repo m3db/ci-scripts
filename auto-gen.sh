@@ -1,6 +1,8 @@
 #!/bin/bash
 set -x
-. "$(dirname $0)/variables.sh"
+
+SCRIPT_DIR=$(dirname $(stat -f $0))
+source "$SCRIPT_DIR/variables.sh"
 
 autogen_clear() {
 	DIR="$1"
@@ -67,6 +69,12 @@ mocks_cleanup() {
 
                 # Strip GOPATH from the source file path
                 sed "s|Source: $GOPATH/src/\(.*\.go\)|Source: \1|" $FILE > $FILE.tmp && mv $FILE.tmp $FILE
+
+                 # cleanup formatting
+                gofmt -w $FILE
+
+                # apply m3 import rules
+                $SCRIPT_DIR/import_order_cleanup.py -o inplace -t $FILE
             done
         fi
     done
