@@ -1,5 +1,6 @@
 metalinter_version   := v2.0.0
 badtime_version      := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
+mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
 coverfile            := cover.out
 coverage_xml         := coverage.xml
 coverage_html        := coverage.html
@@ -33,6 +34,12 @@ install-linter-badtime:
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
 		git checkout $(badtime_version) && go install)
 	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
+
+install-util-mockclean:
+	@which mockclean > /dev/null || (go get -u github.com/m3db/build-tools/utilities/mockclean && \
+		cd $(GOPATH)/src/github.com/m3db/build-tools/utilities/mockclean && \
+		git checkout $(mockclean_version) && go install)
+	@which mockclean > /dev/null || (echo "mockclean install failed" && exit 1)
 
 test-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
