@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 . "$(dirname $0)/variables.sh"
 
 autogen_clear() {
@@ -55,6 +54,11 @@ mocks_cleanup() {
         if ls $MOCKS &> /dev/null; then
             for FILE in $(ls $MOCKS);
             do
+                # NB(prateek): running mockclean makes mock-gen idempotent.
+                basePkg=$(echo $DIR | sed -e "s@${GOPATH}/src/@@g")
+                mockclean -pkg $basePkg -out $FILE -in $FILE
+                gofmt -w $FILE
+
                 add_license $FILE $DIR
 
                 # NB(xichen): there is an open issue (https://github.com/golang/mock/issues/30)
