@@ -19,7 +19,7 @@ if [[ $LINT_OUT == "" ]]; then
 	exit 0
 fi
 
-echo $LINT_OUT
+echo "$LINT_OUT"
 if [[ $LINT_OUT == *"maligned"* ]]; then
 	echo "If you received an error about struct size, try re-ordering the fields in descending order by size."
   echo "https://github.com/dominikh/go-tools/tree/master/cmd/structlayout"
