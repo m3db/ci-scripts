@@ -35,7 +35,7 @@ TEST_EXIT=${PIPESTATUS[0]}
 echo "test-cover begin: concurrency 1, +big"
 for DIR in $DIRS; do
   if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
-    go test $TEST_FLAGS -tags big -coverprofile $PROFILE_BIG $DIR | tee $LOG
+    go test $TEST_FLAGS -p 1 --parallel 1 -tags big -coverprofile $PROFILE_BIG $DIR | tee $LOG
     BIG_TEST_EXIT=${PIPESTATUS[0]}
     # Only set TEST_EXIT if its already zero to be prevent overwriting non-zero exit codes
     if [ "$TEST_EXIT" = "0" ]; then
