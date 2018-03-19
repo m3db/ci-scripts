@@ -7,6 +7,7 @@ coverage_html        := coverage.html
 junit_xml            := junit.xml
 convert_test_data    := .ci/convert-test-data.sh
 test                 := .ci/test-cover.sh
+test_big             := .ci/test-big-cover.sh
 test_one_integration := .ci/test-one-integration.sh
 test_ci_integration  := .ci/test-integration.sh
 test_log             := test.log
@@ -45,6 +46,10 @@ test-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
 	$(test) $(coverfile) | tee $(test_log)
 
+test-base-big:
+	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
+	$(test_big) $(coverfile) | tee $(test_log)
+
 test-base-xml: test-base
 	go-junit-report < $(test_log) > $(junit_xml)
 	gocov convert $(coverfile) | gocov-xml > $(coverage_xml)
@@ -63,6 +68,10 @@ test-base-single-integration:
 	$(test_one_integration) $(name)
 
 test-base-ci-unit: test-base
+	@which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
+	goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
+
+test-base-ci-big-unit: test-base-big
 	@which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
 	goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
