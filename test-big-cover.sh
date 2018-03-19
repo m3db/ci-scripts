@@ -1,7 +1,7 @@
 #!/bin/bash
 . "$(dirname $0)/variables.sh"
 
-set -ex
+set -e
 
 TARGET=${1:-profile.cov}
 LOG=${2:-test.log}
@@ -29,8 +29,8 @@ echo "test-cover begin: concurrency 1, +big"
 for DIR in $DIRS; do
   if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
     # extract only the tests marked "big"
-    BIG_TESTS=$(cat <(go test $DIR -tags big -list '.*' | grep -v '^ok' ) \
-                    <(go test $DIR -list '.*' | grep -v '^ok' )           \
+    BIG_TESTS=$(cat <(go test $DIR -tags big -list '.*' | grep -v '^ok' | grep -v 'no test files' ) \
+                    <(go test $DIR -list '.*' | grep -v '^ok' | grep -v 'no test files')            \
                     | sort | uniq -u | paste -sd'|' -)
     go test $TEST_FLAGS -tags big -run $BIG_TESTS -coverprofile $PROFILE_BIG $DIR | tee $LOG
     BIG_TEST_EXIT=${PIPESTATUS[0]}
