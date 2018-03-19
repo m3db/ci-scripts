@@ -47,7 +47,7 @@ for DIR in $DIRS; do
   fi
 done
 
-cat $PROFILE_REG | grep -v "_mock.go" > $TARGET
+cat $PROFILE_REG | grep -v "_mock.go" >> $TARGET
 
 find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
 echo "test-cover result: $TEST_EXIT"
