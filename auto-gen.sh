@@ -98,9 +98,7 @@ set -e
 . "$(dirname $0)/variables.sh"
 
 if [ "$2" = "generated/mocks" ]; then
-    # NOTE: m3db uses the *_mock.go convention, m3cluster uses mock_*.go
     mocks_clear "*_mock.go"
-    mocks_clear "mock_*.go"
 else
     autogen_clear $1
 fi
@@ -108,9 +106,7 @@ fi
 go generate $PACKAGE/$2
 
 if [ "$2" = "generated/mocks" ]; then
-    # NOTE: m3db uses the *_mock.go convention, m3cluster uses mock_*.go
     mocks_cleanup "*_mock.go"
-    mocks_cleanup "mock_*.go"
 else
     autogen_cleanup $1
 fi
