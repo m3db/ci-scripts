@@ -13,7 +13,7 @@ echo "mode: ${COVERMODE}" > $COVERFILE
 
 # compile the integration test binary
 go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
-  -test.coverpkg $(go list ./... | paste -sd, -) ./${DIR}
+  -test.coverpkg $(go list ./... |  grep -v /vendor/ | paste -sd, -) ./${DIR}
 
 # list the tests
 TESTS=$(./integration.test -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
