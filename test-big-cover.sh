@@ -1,10 +1,11 @@
 #!/bin/bash
-. "$(dirname $0)/variables.sh"
-
 set -e
 
+source "$(dirname $0)/variables.sh"
+
 TARGET=${1:-cover.out}
-LOG=${2:-test.log}
+EXCLUDE_FILE=${2}
+LOG=${3:-test.log}
 
 rm $TARGET &>/dev/null || true
 echo "mode: atomic" > $TARGET
@@ -46,7 +47,7 @@ for DIR in $DIRS; do
   fi
 done
 
-cat $PROFILE_REG | grep -v "_mock.go" > $TARGET
+filter_cover_profile $PROFILE_REG $TARGET $EXCLUDE_FILE
 
 find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
 echo "test-cover result: $TEST_EXIT"

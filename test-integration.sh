@@ -1,15 +1,17 @@
 #!/bin/bash
-. "$(dirname $0)/variables.sh"
-
 set -e
 
+source "$(dirname $0)/variables.sh"
+
+COVERFILE=${1:-profile.cov}
+EXCLUDE_FILE=${2}
 TAGS="integration"
 DIR="integration"
 INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
-COVERFILE=${COVERFILE:-cover.out}
 COVERMODE=count
+SCRATCH_FILE=${COVERFILE}.tmp
 
-echo "mode: ${COVERMODE}" > $COVERFILE
+echo "mode: ${COVERMODE}" > $SCRATCH_FILE
 
 # compile the integration test binary
 go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
@@ -29,8 +31,10 @@ for TEST in $TESTS; do
     echo "$TEST failed"
     exit $TEST_EXIT
   fi
-  cat temp_${COVERFILE} | grep -v '_mock.go' | grep -v "mode: " >> ${COVERFILE}
+  cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
 done
+
+filter_cover_profile $SCRATCH_FILE $COVERFILE $EXCLUDE_FILE
 
 echo "PASS all integrations tests"

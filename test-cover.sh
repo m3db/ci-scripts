@@ -1,10 +1,11 @@
 #!/bin/bash
-. "$(dirname $0)/variables.sh"
-
 set -e
 
+source "$(dirname $0)/variables.sh"
+
 TARGET=${1:-profile.cov}
-LOG=${2:-test.log}
+EXCLUDE_FILE=${2}
+LOG=${3:-test.log}
 
 rm $TARGET &>/dev/null || true
 echo "mode: count" > $TARGET
@@ -30,7 +31,7 @@ TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
 go run .ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
 TEST_EXIT=${PIPESTATUS[0]}
 
-cat $PROFILE_REG | grep -v "_mock.go" > $TARGET
+filter_cover_profile $PROFILE_REG $TARGET $EXCLUDE_FILE
 
 find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
 echo "test-cover result: $TEST_EXIT"

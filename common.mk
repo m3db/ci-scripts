@@ -3,6 +3,7 @@ badtime_version      := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
 mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
+coverage_exclude     := .excludecoverage
 coverage_xml         := coverage.xml
 coverage_html        := coverage.html
 junit_xml            := junit.xml
@@ -12,6 +13,7 @@ test_big             := .ci/test-big-cover.sh
 test_one_integration := .ci/test-one-integration.sh
 test_ci_integration  := .ci/test-integration.sh
 test_log             := test.log
+codecov_push         := .ci/codecov.sh
 
 install-vendor: install-glide
 	@echo Installing glide deps
@@ -52,11 +54,11 @@ install-generics-bin:
 
 test-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
-	$(test) $(coverfile) | tee $(test_log)
+	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log)
 
 test-big-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
-	$(test_big) $(coverfile) | tee $(test_log)
+	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)
 
 test-base-xml: test-base
 	go-junit-report < $(test_log) > $(junit_xml)
@@ -80,4 +82,4 @@ test-base-ci-unit: test-base
 	goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
 test-base-ci-integration:
-	$(test_ci_integration)
+	$(test_ci_integration) $(coverfile) $(coverage_exclude)
