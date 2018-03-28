@@ -1,7 +1,7 @@
 #!/bin/bash
-source "$(dirname $0)/.ci/variables.sh"
-
 set -e
+
+source "$(dirname $0)/variables.sh"
 
 TAGS="integration"
 DIR="integration"
