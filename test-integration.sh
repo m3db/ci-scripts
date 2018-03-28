@@ -16,7 +16,9 @@ go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
   -test.coverpkg $(go list ./... | paste -sd, -) ./${DIR}
 
 # list the tests
-TESTS=$(./integration.test -test.list '.*')
+TESTS=$(./integration.test -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
+# can use the version below once the minimum version we use is go1.9
+# TESTS=$(./integration.test -test.list '.*')
 
 # execute tests one by one for isolation
 for TEST in $TESTS; do
