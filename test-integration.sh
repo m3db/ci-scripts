@@ -3,11 +3,11 @@ set -e
 
 source "$(dirname $0)/variables.sh"
 
+COVERFILE=${1:-profile.cov}
+EXCLUDE_FILE=${2}
 TAGS="integration"
 DIR="integration"
 INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
-COVERFILE=${COVERFILE:-cover.out}
-EXCLUDE_FILE=${EXCLUDE_FILE}
 COVERMODE=count
 SCRATCH_FILE=${COVERFILE}.tmp
 
