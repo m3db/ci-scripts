@@ -112,7 +112,7 @@ set -e
 . "$(dirname $0)/variables.sh"
 
 if [ "$2" = "generated/mocks" ]; then
-    mocks_clear "*_mock.go"
+    remove_matching_files "*_mock.go"
 elif [ "$2" = "generated/generics" ]; then
     remove_matching_files "*.gen.go"
 else
