@@ -31,10 +31,10 @@ for TEST in $TESTS; do
     echo "$TEST failed"
     exit $TEST_EXIT
   fi
-  cat temp_${COVERFILE} | grep -v '_mock.go' | grep -v "mode: " >> ${SCRATCH_FILE}
+  cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
 done
 
-filter_cover_profile $SCRATCH_FILE $EXCLUDE_FILE $COVERFILE
+filter_cover_profile $SCRATCH_FILE $COVERFILE $EXCLUDE_FILE
 
 echo "PASS all integrations tests"
