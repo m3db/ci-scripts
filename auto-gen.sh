@@ -18,13 +18,13 @@ autogen_subdir_clear() {
     rm -f ${DIR}/*.go
 }
 
-mocks_clear() {
-    local MOCK_PATTERN=$1
+remove_matching_files() {
+    local FILE_PATTERN=$1
     for DIR in $SRC;
     do
-        local MOCKS=${DIR}/$MOCK_PATTERN
-        if ls $MOCKS &> /dev/null; then
-            for FILE in $(ls $MOCKS);
+        local MATCHING_FILES=${DIR}/$FILE_PATTERN
+        if ls $MATCHING_FILES &> /dev/null; then
+            for FILE in $(ls $MATCHING_FILES);
             do
                 rm $FILE
             done
@@ -77,6 +77,20 @@ mocks_cleanup() {
     done
 }
 
+generics_cleanup() {
+    local GEN_FILES_PATTERN=$1
+    for DIR in $SRC;
+    do
+        local GEN_FILES=${DIR}/${GEN_FILES_PATTERN}
+        if ls $GEN_FILES &> /dev/null; then
+            for FILE in $(ls $GEN_FILES);
+            do
+                add_license $FILE $DIR
+            done
+        fi
+    done
+}
+
 add_license() {
     FILE="$1"
     DIR="$2"
@@ -98,7 +112,9 @@ set -e
 . "$(dirname $0)/variables.sh"
 
 if [ "$2" = "generated/mocks" ]; then
-    mocks_clear "*_mock.go"
+    remove_matching_files "*_mock.go"
+elif [ "$2" = "generated/generics" ]; then
+    remove_matching_files "*.gen.go"
 else
     autogen_clear $1
 fi
@@ -107,6 +123,8 @@ go generate $PACKAGE/$2
 
 if [ "$2" = "generated/mocks" ]; then
     mocks_cleanup "*_mock.go"
+elif [ "$2" = "generated/generics" ]; then
+    generics_cleanup "*.gen.go"
 else
     autogen_cleanup $1
 fi

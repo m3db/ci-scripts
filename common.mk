@@ -1,6 +1,7 @@
 metalinter_version   := v2.0.0
 badtime_version      := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
 mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
+genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
 coverage_xml         := coverage.xml
 coverage_html        := coverage.html
@@ -41,6 +42,13 @@ install-util-mockclean:
 		cd $(GOPATH)/src/github.com/m3db/build-tools/utilities/mockclean && \
 		git checkout $(mockclean_version) && go install)
 	@which mockclean > /dev/null || (echo "mockclean install failed" && exit 1)
+
+install-generics-bin:
+	@which genny > /dev/null || (go get -u github.com/mauricelam/genny && \
+		cd $(GOPATH)/src/github.com/mauricelam/genny && \
+		git checkout $(genny_version) && \
+		go install)
+	@which genny > /dev/null || (echo "genny install failed" && exit 1)
 
 test-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
