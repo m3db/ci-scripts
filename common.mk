@@ -7,6 +7,7 @@ coverage_html        := coverage.html
 junit_xml            := junit.xml
 convert_test_data    := .ci/convert-test-data.sh
 test                 := .ci/test-cover.sh
+test_big             := .ci/test-big-cover.sh
 test_one_integration := .ci/test-one-integration.sh
 test_ci_integration  := .ci/test-integration.sh
 test_log             := test.log
@@ -44,6 +45,10 @@ install-util-mockclean:
 test-base:
 	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
 	$(test) $(coverfile) | tee $(test_log)
+
+test-big-base:
+	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
+	$(test_big) $(coverfile) | tee $(test_log)
 
 test-base-xml: test-base
 	go-junit-report < $(test_log) > $(junit_xml)
