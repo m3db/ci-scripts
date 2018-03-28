@@ -7,7 +7,7 @@ TARGET=${1:-cover.out}
 LOG=${2:-test.log}
 
 rm $TARGET &>/dev/null || true
-echo "mode: count" > $TARGET
+echo "mode: atomic" > $TARGET
 echo "" > $LOG
 
 DIRS=""
@@ -23,6 +23,7 @@ PROFILE_BIG="profile_big.tmp"
 TEST_EXIT=0
 
 # run big tests one by one
+TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
 echo "test-cover begin: concurrency 1, +big"
 for DIR in $DIRS; do
   if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
