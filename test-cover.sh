@@ -25,7 +25,6 @@ fi
 echo "test-cover begin: concurrency $NPROC"
 
 PROFILE_REG="profile_reg.tmp"
-PROFILE_BIG="profile_big.tmp"
 
 TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
 go run .ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
