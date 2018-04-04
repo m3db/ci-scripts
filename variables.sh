@@ -19,9 +19,9 @@ filter_cover_profile() {
     exit 1
   fi
   if [ ! -z $exclude_file ] && [ -f $exclude_file ] ; then
-    cat $input_profile_file | egrep -v -f $exclude_file >> $output_file
+    cat $input_profile_file | egrep -v -f $exclude_file | grep -v 'mode:' >> $output_file
   else
-    cat $input_profile_file | grep -v "_mock.go" >> $output_file
+    cat $input_profile_file | grep -v "_mock.go" | grep -v 'mode:' >> $output_file
   fi
 }
 

@@ -8,7 +8,7 @@ EXCLUDE_FILE=${2}
 LOG=${3:-test.log}
 
 rm $TARGET &>/dev/null || true
-echo "mode: count" > $TARGET
+echo "mode: atomic" > $TARGET
 echo "" > $LOG
 
 DIRS=""
