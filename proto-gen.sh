@@ -8,6 +8,6 @@ for i in "$PROTO_SRC"/*; do
 
 	if ls $i/*.proto > /dev/null 2>&1; then
 			echo "generating from $i"
-			protoc -I$GOPATH/src/github.com/gogo/protobuf/gogoproto -I$PROTO_SRC --gogofaster_out=$PROTO_SRC $i/*.proto
+			protoc -I$GOPATH/src --gogofaster_out=$GOPATH/src $i/*.proto
 	fi
 done
