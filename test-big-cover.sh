@@ -8,7 +8,7 @@ EXCLUDE_FILE=${2}
 LOG=${3:-test.log}
 
 rm $TARGET &>/dev/null || true
-echo "mode: atomic" > $TARGET
+echo "mode: count" > $TARGET
 echo "" > $LOG
 
 DIRS=""
@@ -24,7 +24,7 @@ PROFILE_BIG="profile_big.tmp"
 TEST_EXIT=0
 
 # run big tests one by one
-TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
+TEST_FLAGS="-v -timeout 5m -covermode count"
 echo "test-cover begin: concurrency 1, +big"
 for DIR in $DIRS; do
   if cat $DIR/*_test.go | grep "// +build" | grep "big" &>/dev/null; then
@@ -32,7 +32,9 @@ for DIR in $DIRS; do
     BIG_TESTS=$(cat <(go test $DIR -tags big -list '.*' | grep -v '^ok' | grep -v 'no test files' ) \
                     <(go test $DIR -list '.*' | grep -v '^ok' | grep -v 'no test files')            \
                     | sort | uniq -u | paste -sd'|' -)
-    go test $TEST_FLAGS -tags big -run $BIG_TESTS -coverprofile $PROFILE_BIG $DIR | tee $LOG
+    go test $TEST_FLAGS -tags big -run $BIG_TESTS -coverprofile $PROFILE_BIG \
+      -coverpkg $(go list ./... | grep -v /vendor/ | paste -sd, -)           \
+      $DIR | tee $LOG
     BIG_TEST_EXIT=${PIPESTATUS[0]}
     # Only set TEST_EXIT if its already zero to be prevent overwriting non-zero exit codes
     if [ "$TEST_EXIT" = "0" ]; then
