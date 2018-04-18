@@ -32,7 +32,7 @@ export -f filter_cover_profile
 function generate_dummy_coverage_file() {
   local package_name=$1
   local build_tag=$2
-go list ./... | grep -v vendor | grep -v "\/${package_name}\/" > repo_packages.out
+go list ./... | grep -v vendor | grep -v "\/${package_name}" > repo_packages.out
 INPUT_FILE=./repo_packages.out python <<END
 import os
 input_file_path = os.environ['INPUT_FILE']
