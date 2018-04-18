@@ -24,7 +24,7 @@ then
     rm -f ${DUMMY_FILE_PATH} # delete file if it exists (only happens when running on a laptop)
   fi
   # NB: need to do this in two steps or the go compiler compiles the partial file and is :(
-  generate_dummy_coverage_file > coverage_imports_file.out
+  generate_dummy_coverage_file integration integration > coverage_imports_file.out
   mv coverage_imports_file.out ${DUMMY_FILE_PATH}
 fi
 
