@@ -26,3 +26,28 @@ filter_cover_profile() {
 }
 
 export -f filter_cover_profile
+
+# go1.10 has an open bug for coverage reports that requires a *terrible* hack
+# to workaround. See https://github.com/golang/go/issues/23883 for more details
+function generate_dummy_coverage_file() {
+  local package_name=$1
+  local build_tag=$2
+go list ./... | grep -v vendor | grep -v "\/${package_name}" > repo_packages.out
+INPUT_FILE=./repo_packages.out python <<END
+import os
+input_file_path = os.environ['INPUT_FILE']
+input_file = open(input_file_path)
+print '// +build ${build_tag}'
+print
+print 'package ${package_name}'
+print
+print 'import ('
+for line in input_file.readlines():
+    line = line.strip()
+    print '\t _ "%s"' % line
+print ')'
+print
+END
+}
+
+export -f generate_dummy_coverage_file
