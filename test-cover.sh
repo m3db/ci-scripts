@@ -4,7 +4,7 @@ set -e
 source "$(dirname $0)/variables.sh"
 
 TARGET=${1:-profile.cov}
-EXCLUDE_FILE=${2}
+EXCLUDE_FILE=${2:-.excludecoverage}
 LOG=${3:-test.log}
 
 rm $TARGET &>/dev/null || true
