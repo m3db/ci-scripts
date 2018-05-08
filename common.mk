@@ -1,6 +1,5 @@
 metalinter_version   := v2.0.0
-badtime_version      := a1d80fa39058e2de323bf0b54d47bfab92e9a97f
-importorder_version  := 3f819087b08b226b0f3f280d3716a485517872aa
+m3linters_version    := 3f819087b08b226b0f3f280d3716a485517872aa
 mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
@@ -37,13 +36,13 @@ install-metalinter:
 install-linter-badtime:
 	@which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
-		git checkout $(badtime_version) && go install)
+		git checkout $(m3linters_version) && go install)
 	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
 
 install-linter-importorder:
 	@which importorder > /dev/null || (go get -u github.com/m3db/build-tools/linters/importorder && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/importorder && \
-		git checkout $(importorder_version) && go install)
+		git checkout $(m3linters_version) && go install)
 	@which importorder > /dev/null || (echo "importorder install failed" && exit 1)
 
 install-util-mockclean:
