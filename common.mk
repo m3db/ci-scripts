@@ -36,13 +36,13 @@ install-metalinter:
 install-linter-badtime:
 	@which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
-		git checkout $(m3linters_version) && go install)
+		git checkout $(m3linters_version) && go install && git checkout master)
 	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
 
 install-linter-importorder:
 	@which importorder > /dev/null || (go get -u github.com/m3db/build-tools/linters/importorder && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/importorder && \
-		git checkout $(m3linters_version) && go install)
+		git checkout $(m3linters_version) && go install && git checkout master)
 	@which importorder > /dev/null || (echo "importorder install failed" && exit 1)
 
 install-util-mockclean:
