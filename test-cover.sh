@@ -6,6 +6,7 @@ source "$(dirname $0)/variables.sh"
 TARGET=${1:-profile.cov}
 EXCLUDE_FILE=${2:-.excludecoverage}
 LOG=${3:-test.log}
+CI_DIR=${4:-.}
 
 rm $TARGET &>/dev/null || true
 echo "mode: atomic" > $TARGET
@@ -28,7 +29,7 @@ echo "test-cover begin: concurrency $NPROC"
 PROFILE_REG="profile_reg.tmp"
 
 TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
-go run .ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
+go run $CI_DIR/.ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $DIRS | tee $LOG
 TEST_EXIT=${PIPESTATUS[0]}
 
 filter_cover_profile $PROFILE_REG $TARGET $EXCLUDE_FILE
