@@ -10,12 +10,12 @@ if [ "$SRC_ROOT" != "" ]; then
   FIND_ROOT=$SRC_ROOT
 fi
 
-FIND_EXCLUDE=""
+FIND_EXCLUDE="\"\""
 if [ "$SRC_EXCLUDE" != "" ]; then
-  FIND_EXCLUDE=" | grep -v $SRC_EXCLUDE"
+  FIND_EXCLUDE="-v \"$SRC_EXCLUDE\""
 fi
 
-export SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d $FIND_EXCLUDE)
+export SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d | fgrep $FIND_EXCLUDE)
 
 filter_cover_profile() {
   local input_profile_file=$1
