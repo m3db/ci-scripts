@@ -1,6 +1,4 @@
 #!/bin/bash
-set -x
-
 # set PACKAGE in .travis.yml
 export VENDOR_PATH=$PACKAGE/vendor
 export LICENSE_BIN=$GOPATH/src/$PACKAGE/.ci/uber-licence/bin/licence
