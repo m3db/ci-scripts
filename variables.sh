@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 # set PACKAGE in .travis.yml
 export VENDOR_PATH=$PACKAGE/vendor
@@ -10,12 +11,13 @@ if [ "$SRC_ROOT" != "" ]; then
   FIND_ROOT=$SRC_ROOT
 fi
 
-FIND_EXCLUDE="\"\""
+BASE_SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d)
 if [ "$SRC_EXCLUDE" != "" ]; then
-  FIND_EXCLUDE="-v $SRC_EXCLUDE"
+  OTHER=$(echo $BASE_SRC | fgrep -v $SRC_EXCLUDE)
+  BASE_SRC=$OTHER
 fi
 
-export SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d | fgrep $FIND_EXCLUDE)
+export SRC=$BASE_SRC
 
 filter_cover_profile() {
   local input_profile_file=$1
