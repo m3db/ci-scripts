@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # set PACKAGE in .travis.yml
 export VENDOR_PATH=$PACKAGE/vendor
 export LICENSE_BIN=$GOPATH/src/$PACKAGE/.ci/uber-licence/bin/licence
@@ -10,12 +9,15 @@ if [ "$SRC_ROOT" != "" ]; then
   FIND_ROOT=$SRC_ROOT
 fi
 
-FIND_EXCLUDE="\"\""
-if [ "$SRC_EXCLUDE" != "" ]; then
-  FIND_EXCLUDE="-v $SRC_EXCLUDE"
-fi
+find_dirs() {
+  find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d
+}
 
-export SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d | fgrep $FIND_EXCLUDE)
+BASE_SRC=$(find_dirs)
+if [ "$SRC_EXCLUDE" != "" ]; then
+  BASE_SRC=$(find_dirs | grep -v $SRC_EXCLUDE)
+fi
+export SRC=$BASE_SRC
 
 filter_cover_profile() {
   local input_profile_file=$1
