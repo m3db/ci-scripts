@@ -9,12 +9,14 @@ if [ "$SRC_ROOT" != "" ]; then
   FIND_ROOT=$SRC_ROOT
 fi
 
-BASE_SRC=$(find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d)
-if [ "$SRC_EXCLUDE" != "" ]; then
-  OTHER=$(echo $BASE_SRC | fgrep -v $SRC_EXCLUDE)
-  BASE_SRC=$OTHER
-fi
+find_dirs() {
+  find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d
+}
 
+BASE_SRC=$(find_dirs)
+if [ "$SRC_EXCLUDE" != "" ]; then
+  BASE_SRC=$(find_dirs | grep -v $SRC_EXCLUDE)
+fi
 export SRC=$BASE_SRC
 
 filter_cover_profile() {
