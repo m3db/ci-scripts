@@ -1,7 +1,7 @@
 #!/bin/bash
 
-if [[ $# -ne 2 ]]; then
-  echo "Usage: $0 <metalinter-config-file> <exclude-file>"
+if [[ $# -ne 2 ]] && [[ $# -ne 3 ]]; then
+  echo "Usage: $0 <metalinter-config-file> <exclude-file> [<lint-dir>]"
   exit 1
 fi
 
