@@ -8,6 +8,6 @@ for i in "$PROTO_SRC"/*; do
 
 	if ls $i/*.proto > /dev/null 2>&1; then
 			echo "generating from $i"
-			protoc -I$i --gofast_out=$i --proto_path=$i:$GOPATH/src/github.com/m3db/m3db:$GOPATH/src/github.com/m3db/m3db/vendor $i/*.proto
+			protoc -I$i --gofast_out=$i --proto_path=$i:$GOPATH/src:$GOPATH/src/github.com/m3db/m3db/vendor $i/*.proto
 	fi
 done
