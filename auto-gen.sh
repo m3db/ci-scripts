@@ -54,6 +54,7 @@ mocks_cleanup() {
         if ls $MOCKS &> /dev/null; then
             for FILE in $(ls $MOCKS);
             do
+                echo $FILE
                 add_license $FILE $DIR
 
                 # NB(xichen): there is an open issue (https://github.com/golang/mock/issues/30)
@@ -111,9 +112,9 @@ set -e
 
 . "$(dirname $0)/variables.sh"
 
-if [ "$2" = "generated/mocks" ]; then
+if [[ "$2" = *"generated/mocks"* ]]; then
     remove_matching_files "*_mock.go"
-elif [ "$2" = "generated/generics" ]; then
+elif [[ "$2" = *"generated/generics"* ]]; then
     remove_matching_files "*.gen.go"
 else
     autogen_clear $1
@@ -121,9 +122,9 @@ fi
 
 go generate $PACKAGE/$2
 
-if [ "$2" = "generated/mocks" ]; then
+if [[ "$2" = *"generated/mocks"* ]]; then
     mocks_cleanup "*_mock.go"
-elif [ "$2" = "generated/generics" ]; then
+elif [[ "$2" = *"generated/generics"* ]]; then
     generics_cleanup "*.gen.go"
 else
     autogen_cleanup $1
