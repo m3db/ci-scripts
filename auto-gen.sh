@@ -54,7 +54,6 @@ mocks_cleanup() {
         if ls $MOCKS &> /dev/null; then
             for FILE in $(ls $MOCKS);
             do
-                echo $FILE
                 add_license $FILE $DIR
 
                 # NB(xichen): there is an open issue (https://github.com/golang/mock/issues/30)
