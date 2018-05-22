@@ -8,7 +8,7 @@ sleep 10
 echo "Adding namespace"
 
 curl -X POST localhost:7201/namespace/add -d '{
-    "name": "metrics2",
+    "name": "default",
     "retention_period": "48h",
     "block_size": "2h",
     "buffer_future": "10m",
@@ -38,4 +38,38 @@ curl -X POST localhost:7201/placement/init -d '{
             "port": 9000
         }
     ]
+}'
+
+echo "Write data" 
+
+curl http://localhost:9003/writetagged -s -X POST -d '{
+    "namespace":"default",
+    "id":"foo",
+    "tags": [
+        {
+            "name":"city",
+            "value":"new_york"
+        },{
+            "name":"endpoint",
+            "value":"/request"
+        }
+    ],
+    "datapoint": { 
+        "timestamp":'"$(date +"%s")"',
+        "value":42.123456789
+    }
+}'
+
+echo "Read data"
+
+curl http://localhost:9003/query -s -X POST -d '{
+    "namespace":"metrics",
+    "query": {
+        "regexp": { 
+            "field":"city",
+            "regexp":".*"
+        }
+    },
+    "rangeStart":0,
+    "rangeEnd":'"$(date +"%s")"'
 }'
