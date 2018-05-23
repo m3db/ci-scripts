@@ -1,10 +1,23 @@
 #!/bin/bash
-
 # set PACKAGE in .travis.yml
 export VENDOR_PATH=$PACKAGE/vendor
 export LICENSE_BIN=$GOPATH/src/$PACKAGE/.ci/uber-licence/bin/licence
 export GO15VENDOREXPERIMENT=1
-export SRC=$(find ./ -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d)
+
+FIND_ROOT="./"
+if [ "$SRC_ROOT" != "" ]; then
+  FIND_ROOT=$SRC_ROOT
+fi
+
+find_dirs() {
+  find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d
+}
+
+BASE_SRC=$(find_dirs)
+if [ "$SRC_EXCLUDE" != "" ]; then
+  BASE_SRC=$(find_dirs | grep -v $SRC_EXCLUDE)
+fi
+export SRC=$BASE_SRC
 
 filter_cover_profile() {
   local input_profile_file=$1
@@ -32,7 +45,7 @@ export -f filter_cover_profile
 function generate_dummy_coverage_file() {
   local package_name=$1
   local build_tag=$2
-go list ./... | grep -v vendor | grep -v "\/main$" | grep -v "\/${package_name}" > repo_packages.out
+go list ./$FIND_ROOT/... | grep -v vendor | grep -v "\/main$" | grep -v "\/${package_name}" > repo_packages.out
 INPUT_FILE=./repo_packages.out python <<END
 import os
 input_file_path = os.environ['INPUT_FILE']

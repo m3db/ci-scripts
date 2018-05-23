@@ -16,3 +16,7 @@ Repositories using this package are expected to the following conventions:
 Consult [GUIDELINE.md] for more detailed usage information.
 
 [GUIDELINE.md]: https://github.com/m3db/ci-scripts/blob/master/GUIDELINE.md
+
+<hr>
+
+This project is released under the [Apache License, Version 2.0](LICENSE).

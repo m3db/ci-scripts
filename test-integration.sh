@@ -10,6 +10,7 @@ DIR="integration"
 INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
 COVERMODE=count
 SCRATCH_FILE=${COVERFILE}.tmp
+SRC_ROOT=${SRC_ROOT:-.}
 
 echo "mode: ${COVERMODE}" > $SCRATCH_FILE
 
@@ -19,7 +20,7 @@ GO_MINOR_VERSION=$(go version | awk '{print $3}' | cut -d '.' -f 2)
 if [ ${GO_MINOR_VERSION} -ge 10 ]; # i.e. we're on go1.10 and up
 then
   echo "Generating dummy integration file with all the packages listed for coverage"
-  DUMMY_FILE_PATH=./integration/coverage_imports.go
+  DUMMY_FILE_PATH=${SRC_ROOT}/integration/coverage_imports.go
   if [ -f ${DUMMY_FILE_PATH} ]; then
     rm -f ${DUMMY_FILE_PATH} # delete file if it exists (only happens when running on a laptop)
   fi
@@ -30,7 +31,7 @@ fi
 
 # compile the integration test binary
 go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
-  -test.coverpkg $(go list ./... |  grep -v /vendor/ | paste -sd, -) ./${DIR}
+  -test.coverpkg $(go list ./$SRC_ROOT/... |  grep -v /vendor/ | paste -sd, -) ${SRC_ROOT}/${DIR}
 
 # list the tests
 TESTS=$(./integration.test -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
