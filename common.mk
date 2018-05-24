@@ -28,9 +28,9 @@ install-glide:
 # compesate for the lack of. This conditional tests an environmental variable
 # injected into SEMAPHORE instances, https://semaphoreci.com/docs/available-environment-variables.html
 prep-semaphore:
-	@sudo apt-get -y install swapspace || exit 6
 	@sudo dd if=/dev/zero of=/swapfile bs=1M count=8192  || exit 3
-	@sudo mkswap /swapfile  && sudo chmod 0600 /swapfile  || exit 4
+	@sudo mkswap /swapfile || exit 6
+	@sudo chmod 0600 /swapfile  || exit 4
 	@sudo swapon /swapfile || exit 5
 #	$(SEMAPHORE) && (sudo swapoff -a && sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 && sudo mkswap /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile)
 
