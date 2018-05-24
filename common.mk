@@ -28,7 +28,12 @@ install-glide:
 # compesate for the lack of. This conditional tests an environmental variable
 # injected into SEMAPHORE instances, https://semaphoreci.com/docs/available-environment-variables.html
 prep-semaphore:
-	$(SEMAPHORE) && (sudo swapoff -a && sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 && sudo mkswap /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile)
+	@sudo swapoff -a 
+	@sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 
+	@sudo mkswap /swapfile 
+	@sudo chmod 0600 /swapfile 
+	@sudo swapon /swapfile)
+#	$(SEMAPHORE) && (sudo swapoff -a && sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 && sudo mkswap /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile)
 
 install-ci:
 	make prep-semaphore # test to see if running on SEMAPHORE instance
