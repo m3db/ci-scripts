@@ -15,6 +15,7 @@ test_ci_integration  := .ci/test-integration.sh
 test_log             := test.log
 codecov_push         := .ci/codecov.sh
 
+
 install-vendor: install-glide
 	@echo Installing glide deps
 	glide --debug install
@@ -23,15 +24,14 @@ install-glide:
 		@which glide > /dev/null || (go get -u github.com/Masterminds/glide && cd $(GOPATH)/src/github.com/Masterminds/glide && git checkout v0.12.3 && go install)
 		@glide -version > /dev/null || (echo "Glide install failed" && exit 1)
 
+# Not all SEMAPHORE instances have large amounts of memory. Enabling swap to
+# compesate for the lack of. This conditional tests an environmental variable
+# injected into SEMAPHORE instances, https://semaphoreci.com/docs/available-environment-variables.html
 prep-semaphore:
-	[ -z "$SEMAPHORE" ] || (sudo swapoff -a && \
-		sudo dd if=/dev/zero of=/swapfile bs=1M count=1024 && \
-		sudo mkswap /swapfile && \
-		sudo swapon /swapfile && \
-		for s in cassandra elasticsearch memcached mongod postgresql sphinxsearch rabbitmq-server; do sudo service $s stop; done)
+	$(SEMAPHORE) && (sudo swapoff -a && sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 && sudo mkswap /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile)
 
 install-ci:
-	make prep-semaphore
+	make prep-semaphore # test to see if running on SEMAPHORE instance
 	make install-vendor
 
 install-metalinter:
