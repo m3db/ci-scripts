@@ -29,9 +29,10 @@ install-glide:
 # injected into SEMAPHORE instances, https://semaphoreci.com/docs/available-environment-variables.html
 prep-semaphore:
 	@sudo dd if=/dev/zero of=/tmp/swapfile bs=1M count=8192
-	@sudo chmod 0600 /tmp/swapfile
-	@sudo mkswap -L swapper /tmp/swapfile
-	@sudo swapon -v -L swapper || exit 5
+	@sudo fallocate -l 8G /mnt/8GB.swap
+	@sudo chmod 0600 /mnt/8GB.swap
+	@sudo mkswap /mnt/8GB.swap
+	@sudo swapon /mnt/8GB.swap
 #	$(SEMAPHORE) && (sudo swapoff -a && sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 && sudo mkswap /swapfile && sudo chmod 0600 /swapfile && sudo swapon /swapfile)
 
 install-ci:
