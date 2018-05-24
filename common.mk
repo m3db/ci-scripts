@@ -23,7 +23,15 @@ install-glide:
 		@which glide > /dev/null || (go get -u github.com/Masterminds/glide && cd $(GOPATH)/src/github.com/Masterminds/glide && git checkout v0.12.3 && go install)
 		@glide -version > /dev/null || (echo "Glide install failed" && exit 1)
 
+prep-semaphore:
+	[ -z "$SEMAPHORE" ] || (sudo swapoff -a && \
+		sudo dd if=/dev/zero of=/swapfile bs=1M count=1024 && \
+		sudo mkswap /swapfile && \
+		sudo swapon /swapfile && \
+		for s in cassandra elasticsearch memcached mongod postgresql sphinxsearch rabbitmq-server; do sudo service $s stop; done)
+
 install-ci:
+	make prep-semaphore
 	make install-vendor
 
 install-metalinter:
