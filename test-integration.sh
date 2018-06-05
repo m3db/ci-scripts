@@ -45,11 +45,11 @@ if [ -f ${INTEGRATION_TEST} ]; then
   # execute tests one by one for isolation
   for TEST in $TESTS; do
   ./integration.test -test.v -test.run $TEST -test.coverprofile temp_${COVERFILE} \
-  -test.timeout $INTEGRATION_TIMEOUT ./integration
+    -test.timeout $INTEGRATION_TIMEOUT ./integration
   TEST_EXIT=$?
   if [ "$TEST_EXIT" != "0" ]; then
-      echo "$TEST failed"
-      exit $TEST_EXIT
+    echo "$TEST failed"
+    exit $TEST_EXIT
   fi
   cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
