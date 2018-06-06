@@ -36,16 +36,20 @@ go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
 INTEGRATION_TEST="./integration.test"
 
 # Handle subdirectories with no integration tests
-if [ -f ${INTEGRATION_TEST} ]; then
-  # list the tests
-  TESTS=$(${INTEGRATION_TEST} -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
-  # can use the version below once the minimum version we use is go1.9
-  # TESTS=$(./integration.test -test.list '.*')
+if [ ! -f ${INTEGRATION_TEST} ]; then
+  echo "No integrations tests found"
+  exit 0
+fi
 
-  # execute tests one by one for isolation
-  for TEST in $TESTS; do
+# list the tests
+TESTS=$(${INTEGRATION_TEST} -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
+# can use the version below once the minimum version we use is go1.9
+# TESTS=$(./integration.test -test.list '.*')
+
+# execute tests one by one for isolation
+for TEST in $TESTS; do
   ./integration.test -test.v -test.run $TEST -test.coverprofile temp_${COVERFILE} \
-    -test.timeout $INTEGRATION_TIMEOUT ./integration
+  -test.timeout $INTEGRATION_TIMEOUT ./integration
   TEST_EXIT=$?
   if [ "$TEST_EXIT" != "0" ]; then
     echo "$TEST failed"
@@ -53,11 +57,8 @@ if [ -f ${INTEGRATION_TEST} ]; then
   fi
   cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
-  done
+done
 
-  filter_cover_profile $SCRATCH_FILE $COVERFILE $EXCLUDE_FILE
+filter_cover_profile $SCRATCH_FILE $COVERFILE $EXCLUDE_FILE
 
-  echo "PASS all integrations tests"
-else
-  echo "No integrations tests found"
-fi
+echo "PASS all integrations tests"
