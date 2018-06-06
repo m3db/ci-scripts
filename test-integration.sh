@@ -33,8 +33,16 @@ fi
 go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
   -test.coverpkg $(go list ./$SRC_ROOT/... |  grep -v /vendor/ | paste -sd, -) ${SRC_ROOT}/${DIR}
 
+INTEGRATION_TEST="./integration.test"
+
+# Handle subdirectories with no integration tests
+if [ ! -f ${INTEGRATION_TEST} ]; then
+  echo "No integrations tests found"
+  exit 0
+fi
+
 # list the tests
-TESTS=$(./integration.test -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
+TESTS=$(${INTEGRATION_TEST} -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
 # can use the version below once the minimum version we use is go1.9
 # TESTS=$(./integration.test -test.list '.*')
 
