@@ -12,6 +12,11 @@ COVERMODE=count
 SCRATCH_FILE=${COVERFILE}.tmp
 SRC_ROOT=${SRC_ROOT:-.}
 
+if [ ! -d "${SRC_ROOT}/${DIR}" ]; then
+  echo "No integrations tests found"
+  exit 0
+fi
+
 echo "mode: ${COVERMODE}" > $SCRATCH_FILE
 
 # go1.10 has an open bug for coverage reports that requires a *terrible* hack
