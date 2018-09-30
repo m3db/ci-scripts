@@ -32,9 +32,12 @@ for DIR in $DIRS; do
     # extract only the tests marked "big"
     BIG_TESTS=$(cat <(go test $DIR -tags big -list '.*' | grep -v '^ok' | grep -v 'no test files' ) \
                     <(go test $DIR -list '.*' | grep -v '^ok' | grep -v 'no test files')            \
-                    | sort | uniq -u | paste -sd'|' -)
-    go test $TEST_FLAGS -tags big -run $BIG_TESTS -coverprofile $PROFILE_BIG \
-      -coverpkg $(go list ./$SRC_ROOT/... | grep -v /vendor/ | paste -sd, -)           \
+                    | sort | uniq -u | paste -sd' ' -)
+    # defaults to all if the split vars are unset
+    pick_subset "$BIG_TESTS" TESTS $SPLIT_IDX $TOTAL_SPLITS
+    TESTS=$(echo ${TESTS} | tr ' ' '|')
+    go test $TEST_FLAGS -tags big -run $TESTS -coverprofile $PROFILE_BIG      \
+      -coverpkg $(go list ./$SRC_ROOT/... | grep -v /vendor/ | paste -sd, -)  \
       $DIR | tee $LOG
     BIG_TEST_EXIT=${PIPESTATUS[0]}
     # Only set TEST_EXIT if its already zero to be prevent overwriting non-zero exit codes

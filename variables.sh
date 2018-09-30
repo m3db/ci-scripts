@@ -64,3 +64,41 @@ END
 }
 
 export -f generate_dummy_coverage_file
+
+# pick_subset
+# $1: " " seperated string
+# $2: result var
+# $3: subset num
+# $4: subset total
+# e.g.
+#  $ pick_subset "a b c d" result 1 3
+#  $ echo $result
+#  a d
+function pick_subset()
+{
+  local input_to_split=$1
+  local __result=$2
+  local split_num=$3
+  local split_total=$4
+  local split_output
+
+  if [[ $split_num =~ ^[0-9]+$ ]] &&
+     [[ $split_total =~ ^[0-9]+$ ]]   &&
+     (( split_num < split_total )) ; then
+       split_output=$(echo $input_to_split       \
+         | tr ' ' '\n'                           \
+         | sort                                  \
+         | awk "NR%${split_total}==${split_num}" \
+         | tr '\n' ' '                           \
+       )
+  else
+      echo "warning: illegal subset options: "  >&2
+      echo "split_num:      ${split_num}"       >&2
+      echo "split_total:    ${split_total}"     >&2
+      echo "returning full output."             >&2
+  fi
+  split_output=${split_output:-$input_to_split}
+  eval $__result="'$split_output'"
+ }
+
+export -f pick_subset
