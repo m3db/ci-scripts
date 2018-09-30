@@ -64,3 +64,55 @@ END
 }
 
 export -f generate_dummy_coverage_file
+
+# pick_subset takes a space separated string and breaks it up into multiple subsets.
+# $1: " " seperated string,
+# $2: name of the variable to store the output in,
+# $3: subset index,
+# $4: number of total subsets,
+# e.g.
+# for i in 0 1 2; do echo "## i: $i"; pick_subset "a b c d"  result $i 3 ; echo "$result"; done
+#   ## i: 0
+#   c
+#   ## i: 1
+#   a d
+#   ## i: 2
+#   b
+# NB: generated subsets do not necessarily get grouped in the same order as the original list
+# (as seen in the example above)
+
+function pick_subset()
+{
+  local input_to_split=$1
+  local __result=$2
+  local split_num=$3
+  local split_total=$4
+
+  # defaulting to doing the sane thing w/o a warning
+  if [ -z $split_num ] &&
+     [ -z $split_total ] ; then
+    eval $__result="'$input_to_split'"
+    return 0
+  fi
+
+  local split_output
+  if [[ $split_num =~ ^[0-9]+$ ]] &&
+     [[ $split_total =~ ^[0-9]+$ ]]   &&
+     (( split_num < split_total )) ; then
+       split_output=$(echo $input_to_split       \
+         | tr ' ' '\n'                           \
+         | sort                                  \
+         | awk "NR%${split_total}==${split_num}" \
+         | tr '\n' ' '                           \
+       )
+  else
+      echo "warning: illegal subset options: "  >&2
+      echo "split_num:      ${split_num}"       >&2
+      echo "split_total:    ${split_total}"     >&2
+      echo "returning full output."             >&2
+  fi
+  split_output=${split_output:-$input_to_split}
+  eval $__result="'$split_output'"
+ }
+
+export -f pick_subset

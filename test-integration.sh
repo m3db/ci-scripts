@@ -46,10 +46,9 @@ if [ ! -f ${INTEGRATION_TEST} ]; then
   exit 0
 fi
 
-# list the tests
-TESTS=$(${INTEGRATION_TEST} -test.v -test.short | grep RUN | tr -s " " | cut -d ' ' -f 3)
-# can use the version below once the minimum version we use is go1.9
-# TESTS=$(./integration.test -test.list '.*')
+ALL_TESTS=$(./integration.test -test.list '.*')
+# defaults to all if the split vars are unset
+pick_subset "$ALL_TESTS" TESTS $SPLIT_IDX $TOTAL_SPLITS
 
 # execute tests one by one for isolation
 for TEST in $TESTS; do
