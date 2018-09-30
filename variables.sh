@@ -65,23 +65,37 @@ END
 
 export -f generate_dummy_coverage_file
 
-# pick_subset
-# $1: " " seperated string
-# $2: result var
-# $3: subset num
-# $4: subset total
+# pick_subset takes a space separated string and breaks it up into multiple subsets.
+# $1: " " seperated string,
+# $2: name of the variable to store the output in,
+# $3: subset index,
+# $4: number of total subsets,
 # e.g.
-#  $ pick_subset "a b c d" result 1 3
-#  $ echo $result
-#  a d
+# for i in 0 1 2; do echo "## i: $i"; pick_subset "a b c d"  result $i 3 ; echo "$result"; done
+#   ## i: 0
+#   c
+#   ## i: 1
+#   a d
+#   ## i: 2
+#   b
+# NB: generated subsets do not necessarily get grouped in the same order as the original list
+# (as seen in the example above)
+
 function pick_subset()
 {
   local input_to_split=$1
   local __result=$2
   local split_num=$3
   local split_total=$4
-  local split_output
 
+  # defaulting to doing the sane thing w/o a warning
+  if [ -z $split_num ] &&
+     [ -z $split_total ] ; then
+    eval $__result="'$input_to_split'"
+    return 0
+  fi
+
+  local split_output
   if [[ $split_num =~ ^[0-9]+$ ]] &&
      [[ $split_total =~ ^[0-9]+$ ]]   &&
      (( split_num < split_total )) ; then
