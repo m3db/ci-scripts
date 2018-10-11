@@ -1,5 +1,5 @@
 metalinter_version   := v2.0.0
-m3linters_version    := 294ebc8b60b6758a4fe1b0921fb10630db16a5bf
+m3linters_version    := b82d93905854c5f8cb49ebcffed57caad1496dc9
 mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
