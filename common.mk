@@ -1,6 +1,6 @@
 metalinter_version   := v2.0.0
-m3linters_version    := b82d93905854c5f8cb49ebcffed57caad1496dc9
-mockclean_version    := 3e9c30b229f100027d742104ad6d6b2d968374bd
+m3linters_version    := 3414a73aff9004cba439f1657dcd70c514d2b67a
+genclean_version     := 3414a73aff9004cba439f1657dcd70c514d2b67a
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
 coverage_exclude     := .excludecoverage
@@ -53,11 +53,11 @@ install-linter-importorder:
 		git checkout $(m3linters_version) && go install && git checkout master)
 	@which importorder > /dev/null || (echo "importorder install failed" && exit 1)
 
-install-util-mockclean:
-	@which mockclean > /dev/null || (go get -u github.com/m3db/build-tools/utilities/mockclean && \
-		cd $(GOPATH)/src/github.com/m3db/build-tools/utilities/mockclean && \
-		git checkout $(mockclean_version) && go install)
-	@which mockclean > /dev/null || (echo "mockclean install failed" && exit 1)
+install-util-genclean:
+	@which genclean > /dev/null || (go get -u github.com/m3db/build-tools/utilities/genclean && \
+		cd $(GOPATH)/src/github.com/m3db/build-tools/utilities/genclean && \
+		git checkout $(genclean_version) && go install)
+	@which genclean > /dev/null || (echo "genclean install failed" && exit 1)
 
 install-generics-bin:
 	@which genny > /dev/null || (go get -u github.com/mauricelam/genny && \
