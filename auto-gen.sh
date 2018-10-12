@@ -67,10 +67,10 @@ mocks_cleanup() {
                 # Strip GOPATH from the source file path
                 sed "s|Source: $GOPATH/src/\(.*\.go\)|Source: \1|" $FILE > $FILE.tmp && mv $FILE.tmp $FILE
 
-                # NB(prateek): running mockclean makes mock-gen idempotent.
-                # NB(xichen): mockclean should be run after the vendor path is stripped.
+                # NB(prateek): running genclean makes mock-gen idempotent.
+                # NB(xichen): genclean should be run after the vendor path is stripped.
                 basePkg=$(echo $DIR | sed -e "s@${GOPATH}/src/@@g")
-                mockclean -pkg $basePkg -out $FILE -in $FILE
+                genclean -pkg $basePkg -out $FILE -in $FILE
                 gofmt -w $FILE
             done
         fi
