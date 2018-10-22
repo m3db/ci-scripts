@@ -52,13 +52,28 @@ pick_subset "$ALL_TESTS" TESTS $SPLIT_IDX $TOTAL_SPLITS
 
 # execute tests one by one for isolation
 for TEST in $TESTS; do
-  ./integration.test -test.v -test.run $TEST -test.coverprofile temp_${COVERFILE} \
-  -test.timeout $INTEGRATION_TIMEOUT ./integration
+  echo "Running $TEST"
+
+  OUTPUT="$(./integration.test -test.v -test.run $TEST -test.coverprofile temp_${COVERFILE} \
+  -test.timeout $INTEGRATION_TIMEOUT ./integration)"
+
+  # Check if any invariant violated logs were emitted and if so fail the test
+  # regardless of the exit code.
+  shopt -s nocasematch
+  if [[ $OUTPUT == *"invariant"* ]]; then
+    echo "Invariant violation detected!"
+    echo "$OUTPUT"
+    exit 1
+  fi
+  shopt -u nocasematch
+
   TEST_EXIT=$?
   if [ "$TEST_EXIT" != "0" ]; then
     echo "$TEST failed"
-    exit $TEST_EXIT
+    echo "$OUTPUT"
+    exit "$TEST_EXIT"
   fi
+
   cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
 done
