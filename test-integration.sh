@@ -57,6 +57,13 @@ for TEST in $TESTS; do
   OUTPUT="$(./integration.test -test.v -test.run $TEST -test.coverprofile temp_${COVERFILE} \
   -test.timeout $INTEGRATION_TIMEOUT ./integration)"
 
+  TEST_EXIT=$?
+  if [ "$TEST_EXIT" != "0" ]; then
+    echo "$TEST failed"
+    echo "$OUTPUT"
+    exit "$TEST_EXIT"
+  fi
+
   # Check if any invariant violated logs were emitted and if so fail the test
   # regardless of the exit code.
   shopt -s nocasematch
@@ -66,13 +73,6 @@ for TEST in $TESTS; do
     exit 1
   fi
   shopt -u nocasematch
-
-  TEST_EXIT=$?
-  if [ "$TEST_EXIT" != "0" ]; then
-    echo "$TEST failed"
-    echo "$OUTPUT"
-    exit "$TEST_EXIT"
-  fi
 
   cat temp_${COVERFILE} | grep -v "mode:" >> ${SCRATCH_FILE}
   sleep 0.1
