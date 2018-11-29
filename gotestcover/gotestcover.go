@@ -57,15 +57,15 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	cov, failed := runAllPackageTests(pkgs, flagArgs, func(out string) {
+	result, failed := runAllPackageTests(pkgs, flagArgs, func(out string) {
 		fmt.Print(out)
 	})
-	err = writeCoverProfile(cov)
+	err = writeCoverProfile(result.coverage)
 	if err != nil {
 		return err
 	}
 	if failed {
-		return fmt.Errorf("test failed")
+		return fmt.Errorf("test failed, packages with failures: %v", result.pkgsFail)
 	}
 	return nil
 }
@@ -125,9 +125,20 @@ func resolvePackages(pkgArgs []string) ([]string, error) {
 	return pkgs, nil
 }
 
-func runAllPackageTests(pkgs []string, flgs []string, pf func(string)) ([]byte, bool) {
+type runAllPackageTestsResult struct {
+	coverage []byte
+	pkgsPass []string
+	pkgsFail []string
+}
+
+func runAllPackageTests(
+	pkgs []string,
+	flgs []string,
+	pf func(string),
+) (runAllPackageTestsResult, bool) {
 	pkgch := make(chan string)
 	type res struct {
+		pkg string
 		out string
 		cov []byte
 		err error
@@ -148,6 +159,7 @@ func runAllPackageTests(pkgs []string, flgs []string, pf func(string)) ([]byte, 
 			for p := range pkgch {
 				out, cov, err := runPackageTests(p, flgs)
 				resch <- res{
+					pkg: p,
 					out: out,
 					cov: cov,
 					err: err,
@@ -156,18 +168,18 @@ func runAllPackageTests(pkgs []string, flgs []string, pf func(string)) ([]byte, 
 			wg.Done()
 		}()
 	}
-	failed := false
-	var cov []byte
+	var result runAllPackageTestsResult
 	for r := range resch {
 		if r.err == nil {
 			pf(r.out)
-			cov = append(cov, r.cov...)
+			result.coverage = append(result.coverage, r.cov...)
+			result.pkgsPass = append(result.pkgsPass, r.pkg)
 		} else {
 			pf(r.err.Error())
-			failed = true
+			result.pkgsFail = append(result.pkgsFail, r.pkg)
 		}
 	}
-	return cov, failed
+	return result, len(result.pkgsFail) == 0
 }
 
 func runPackageTests(pkg string, flgs []string) (out string, cov []byte, err error) {
