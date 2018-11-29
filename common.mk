@@ -4,9 +4,7 @@ genclean_version     := 3414a73aff9004cba439f1657dcd70c514d2b67a
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
 coverfile            := cover.out
 coverage_exclude     := .excludecoverage
-coverage_xml         := coverage.xml
 coverage_html        := coverage.html
-junit_xml            := junit.xml
 convert_test_data    := .ci/convert-test-data.sh
 test                 := .ci/test-cover.sh
 test_big             := .ci/test-big-cover.sh
@@ -67,18 +65,10 @@ install-generics-bin:
 	@which genny > /dev/null || (echo "genny install failed" && exit 1)
 
 test-base:
-	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
 	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log)
 
 test-big-base:
-	@which go-junit-report > /dev/null || go get -u github.com/sectioneight/go-junit-report
 	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)
-
-test-base-xml: test-base
-	go-junit-report < $(test_log) > $(junit_xml)
-	gocov convert $(coverfile) | gocov-xml > $(coverage_xml)
-	@$(convert_test_data) $(coverage_xml)
-	@rm $(coverfile) &> /dev/null
 
 test-base-html: test-base
 	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (which open && open $(coverage_html))
@@ -97,3 +87,4 @@ test-base-ci-unit: test-base
 
 test-base-ci-integration:
 	$(test_ci_integration) $(coverfile) $(coverage_exclude)
+
