@@ -88,4 +88,3 @@ test-base-ci-unit: test-base
 test-base-ci-integration:
 	$(test_ci_integration) $(coverfile) $(coverage_exclude)
 
-

@@ -179,7 +179,7 @@ func runAllPackageTests(
 			result.pkgsFail = append(result.pkgsFail, r.pkg)
 		}
 	}
-	return result, len(result.pkgsFail) == 0
+	return result, len(result.pkgsFail) > 0
 }
 
 func runPackageTests(pkg string, flgs []string) (out string, cov []byte, err error) {
