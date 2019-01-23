@@ -14,7 +14,7 @@ if [[ ! -f $exclude_file ]]; then
   exit 1
 fi
 
-LINT_OUT=$(gometalinter --tests --config $config_file --vendor $lint_dir/... | egrep -v -f $exclude_file)
+LINT_OUT=$(gometalinter --tests --exclude=/usr/local/Cellar/go/ --config $config_file --vendor $lint_dir/... | egrep -v -f $exclude_file)
 if [[ $LINT_OUT == "" ]]; then
 	echo "Metalinted succesfully!"
 	exit 0
