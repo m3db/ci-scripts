@@ -1,20 +1,9 @@
 #!/bin/bash
 
-if [[ $# -ne 2 ]] && [[ $# -ne 3 ]]; then
-  echo "Usage: $0 <metalinter-config-file> <exclude-file> [<lint-dir>]"
-  exit 1
-fi
+# metalint.sh is a thin wrapper around gometalinter which adds some useful
+# debug output.
 
-config_file=$1
-exclude_file=$2
-lint_dir=${3:-.}
-
-if [[ ! -f $exclude_file ]]; then
-  echo "exclude-file ($exclude_file) does not exist"
-  exit 1
-fi
-
-LINT_OUT=$(gometalinter --tests --config $config_file --vendor $lint_dir/... | egrep -v -f $exclude_file)
+LINT_OUT=$(gometalinter $@)
 if [[ $LINT_OUT == "" ]]; then
 	echo "Metalinted succesfully!"
 	exit 0
