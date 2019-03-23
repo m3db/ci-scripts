@@ -53,6 +53,13 @@ if git describe --tags --exact-match; then
   TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG} latest"
 fi
 
+# If this commit says to do a docker build, push a tag with the branch name.
+if [[ "$BUILDKITE_MESSAGE" =~ /build-docker ]]; then
+  # Sanitize the branch name (any non-alphanum char gets turned into a '_').
+  TAG=$(<<<"$BUILDKITE_BRANCH" sed 's/[^a-z|0-9]/_/g')
+  TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG}"
+fi
+
 CURRENT_SHA=$(git rev-parse HEAD)
 MASTER_SHA=$(git rev-parse origin/master)
 
