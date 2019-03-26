@@ -3,6 +3,8 @@
 export VENDOR_PATH=$PACKAGE/vendor
 export LICENSE_BIN=$GOPATH/src/$PACKAGE/.ci/uber-licence/bin/licence
 export GO15VENDOREXPERIMENT=1
+export GOPATH
+GOPATH=$(eval "$(go env | grep GOPATH)" && echo "$GOPATH")
 
 FIND_ROOT="./"
 if [ "$SRC_ROOT" != "" ]; then
