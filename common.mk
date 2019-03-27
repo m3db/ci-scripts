@@ -1,3 +1,4 @@
+GOPATH=$(shell eval $$(go env | grep GOPATH) && echo $$GOPATH)
 metalinter_version   := v2.0.0
 m3linters_version    := 3414a73aff9004cba439f1657dcd70c514d2b67a
 genclean_version     := 3414a73aff9004cba439f1657dcd70c514d2b67a
@@ -14,13 +15,17 @@ test_log             := test.log
 codecov_push         := .ci/codecov.sh
 
 
-install-vendor: install-glide
+.PHONY: validate-gopath
+validate-gopath:
+	@stat $(GOPATH) > /dev/null
+
+install-vendor: install-glide validate-gopath
 	@echo Installing glide deps
-	glide --debug install
+	PATH=$(GOPATH)/bin:$(PATH) GOPATH=$(GOPATH) glide --debug install
 
 install-glide:
-		@which glide > /dev/null || (go get github.com/Masterminds/glide && cd $(GOPATH)/src/github.com/Masterminds/glide && git checkout v0.12.3 && go install)
-		@glide -version > /dev/null || (echo "Glide install failed" && exit 1)
+		@PATH=$(GOPATH)/bin:$(PATH) which glide > /dev/null || (go get github.com/Masterminds/glide && cd $(GOPATH)/src/github.com/Masterminds/glide && git checkout v0.12.3 && go install)
+		@PATH=$(GOPATH)/bin:$(PATH) glide -version > /dev/null || (echo "Glide install failed" && exit 1)
 
 # Not all SEMAPHORE instances have large amounts of memory. Enabling swap to
 # compesate for the lack of. This conditional tests an environmental variable
@@ -33,36 +38,36 @@ install-ci:
 	make install-vendor
 
 install-metalinter:
-	@which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && \
+	@PATH=$(GOPATH)/bin:$(PATH) which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && \
 		cd $(GOPATH)/src/github.com/alecthomas/gometalinter && \
 		git checkout $(metalinter_version) && \
 		go install && gometalinter --install)
-	@which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
 
 install-linter-badtime:
-	@which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
+	@PATH=$(GOPATH)/bin:$(PATH) which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/badtime && \
 		git checkout $(m3linters_version) && go install && git checkout master)
-	@which badtime > /dev/null || (echo "badtime install failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which badtime > /dev/null || (echo "badtime install failed" && exit 1)
 
 install-linter-importorder:
-	@which importorder > /dev/null || (go get -u github.com/m3db/build-tools/linters/importorder && \
+	@PATH=$(GOPATH)/bin:$(PATH) which importorder > /dev/null || (go get -u github.com/m3db/build-tools/linters/importorder && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/linters/importorder && \
 		git checkout $(m3linters_version) && go install && git checkout master)
-	@which importorder > /dev/null || (echo "importorder install failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which importorder > /dev/null || (echo "importorder install failed" && exit 1)
 
 install-util-genclean:
-	@which genclean > /dev/null || (go get -u github.com/m3db/build-tools/utilities/genclean && \
+	@PATH=$(GOPATH)/bin:$(PATH) which genclean > /dev/null || (go get -u github.com/m3db/build-tools/utilities/genclean && \
 		cd $(GOPATH)/src/github.com/m3db/build-tools/utilities/genclean && \
 		git checkout $(genclean_version) && go install)
-	@which genclean > /dev/null || (echo "genclean install failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which genclean > /dev/null || (echo "genclean install failed" && exit 1)
 
 install-generics-bin:
-	@which genny > /dev/null || (go get -u github.com/mauricelam/genny && \
+	@PATH=$(GOPATH)/bin:$(PATH) which genny > /dev/null || (go get -u github.com/mauricelam/genny && \
 		cd $(GOPATH)/src/github.com/mauricelam/genny && \
 		git checkout $(genny_version) && \
 		go install)
-	@which genny > /dev/null || (echo "genny install failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which genny > /dev/null || (echo "genny install failed" && exit 1)
 
 test-base:
 	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log)
@@ -71,7 +76,7 @@ test-big-base:
 	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)
 
 test-base-html: test-base
-	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (which open && open $(coverage_html))
+	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (PATH=$(GOPATH)/bin:$(PATH) which open && open $(coverage_html))
 	@rm -f $(test_log) &> /dev/null
 
 test-base-integration:
@@ -82,9 +87,8 @@ test-base-single-integration:
 	$(test_one_integration) $(name)
 
 test-base-ci-unit: test-base
-	@which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
-	goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
+	@PATH=$(GOPATH)/bin:$(PATH) which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
+	PATH=$(GOPATH)/bin:$(PATH) goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
 test-base-ci-integration:
 	$(test_ci_integration) $(coverfile) $(coverage_exclude)
-
