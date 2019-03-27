@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -exo pipefail
+
 if [[ $# -ne 2 ]] && [[ $# -ne 3 ]]; then
   echo "Usage: $0 <metalinter-config-file> <exclude-file> [<lint-dir>]"
   exit 1
@@ -14,7 +16,13 @@ if [[ ! -f $exclude_file ]]; then
   exit 1
 fi
 
-LINT_OUT=$(gometalinter --tests --config $config_file --vendor $lint_dir/... | egrep -v -f $exclude_file)
+# NB(mschalle): gometalinter freaks out when running with go >= 1.10 and tries
+# to lint the standard library. See
+# https://github.com/alecthomas/gometalinter/issues/149 for more. Excluding
+# GOROOT from linting fixes this. This is all a temporary fix until we're on
+# https://github.com/golangci/golangci-lint, as gometalinter is deprecated.
+GOROOT=$(eval "$(go env | grep GOROOT)" && echo "$GOROOT")
+LINT_OUT=$(gometalinter --tests --config "$config_file" --exclude="$(basename "$GOROOT")" --vendor "$lint_dir/..." || true | grep -Ev -f "$exclude_file")
 if [[ $LINT_OUT == "" ]]; then
 	echo "Metalinted succesfully!"
 	exit 0
