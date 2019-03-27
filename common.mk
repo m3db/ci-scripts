@@ -15,7 +15,11 @@ test_log             := test.log
 codecov_push         := .ci/codecov.sh
 
 
-install-vendor: install-glide
+.PHONY: validate-gopath
+validate-gopath:
+	@stat $(GOPATH) > /dev/null
+
+install-vendor: install-glide validate-gopath
 	@echo Installing glide deps
 	PATH=$(GOPATH)/bin:$(PATH) GOPATH=$(GOPATH) glide --debug install
 
