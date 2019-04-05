@@ -22,7 +22,9 @@ fi
 # GOROOT from linting fixes this. This is all a temporary fix until we're on
 # https://github.com/golangci/golangci-lint, as gometalinter is deprecated.
 GOROOT=$(eval "$(go env | grep GOROOT)" && echo "$GOROOT")
-LINT_OUT=$(gometalinter --tests --config "$config_file" --exclude="$(basename "$GOROOT")" --vendor "$lint_dir/..." || true | grep -Ev -f "$exclude_file")
+
+# Check the output of metalinting while not triggering any `set -e` failures.
+LINT_OUT=$( (gometalinter --tests --config "$config_file" --exclude="$(basename "$GOROOT")" --vendor "$lint_dir/..." || true) | grep -Ev -f "$exclude_file" || true)
 if [[ $LINT_OUT == "" ]]; then
 	echo "Metalinted succesfully!"
 	exit 0
