@@ -33,6 +33,15 @@ function push_image() {
   fi
 }
 
+function do_jq() {
+  <"$CONFIG" jq -er "$1"
+}
+
+# Allow null key values (useful for optional fields)
+function do_jq_null() {
+  <"$CONFIG" jq -r "$1"
+}
+
 if [[ ! -f "$CONFIG" ]]; then
   echo "could not find docker images config $CONFIG"
   exit 1
@@ -43,7 +52,7 @@ if [[ -z "$M3_DOCKER_REPO" ]]; then
   exit 1
 fi
 
-IMAGES="$(<"$CONFIG" jq -er '.images | to_entries | map(.key)[]')"
+IMAGES="$(do_jq '.images | to_entries | map(.key)[]')"
 REPO=$M3_DOCKER_REPO
 TAGS_TO_PUSH=""
 
@@ -75,23 +84,24 @@ fi
 log_info "will push [$TAGS_TO_PUSH]"
 
 for IMAGE in $IMAGES; do
-  # Do one build, then push all the necessary tags.
+  NAME=$(do_jq ".images[\"${IMAGE}\"].name")
+  TAG_SUFFIX=$(do_jq_null ".images[\"${IMAGE}\"].tag_suffix")
   SHA_TMP=$(mktemp --suffix m3-docker)
-  log_info "building $IMAGE"
-  docker build --iidfile "$SHA_TMP" -f "$(<"$CONFIG" jq -er ".images[\"${IMAGE}\"].dockerfile")" .
+
+  # Do one build, then push all the necessary tags.
+  log_info "building $NAME ($IMAGE)"
+  docker build --iidfile "$SHA_TMP" -f "$(do_jq ".images[\"${IMAGE}\"].dockerfile")" .
   IMAGE_SHA=$(cat "$SHA_TMP")
+
   for TAG in $TAGS_TO_PUSH; do
-    FULL_TAG="${REPO}/${IMAGE}:${TAG}"
+    # jq outputs "null" for null values. If we ever have a tag suffixed named
+    # "null" we'll have to change this.
+    if [[ "$TAG_SUFFIX" != "null" ]]; then
+      TAG="${TAG}-${TAG_SUFFIX}"
+    fi
+    FULL_TAG="${REPO}/${NAME}:${TAG}"
     docker tag "$IMAGE_SHA" "$FULL_TAG"
     push_image "$FULL_TAG"
-
-    # If the image has aliases, tag them too.
-    ALIASES="$(<"$CONFIG" jq -r "(.images[\"${IMAGE}\"].aliases | if . == null then [] else . end)[]")"
-    for ALIAS in $ALIASES; do
-      DUAL_TAG="${REPO}/${ALIAS}:${TAG}"
-      docker tag "$IMAGE_SHA" "$DUAL_TAG"
-      push_image "$DUAL_TAG"
-    done
   done
 done
 

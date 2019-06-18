@@ -13,7 +13,6 @@ fi
 CURRENT_SHA=$(git rev-parse HEAD)
 MASTER_SHA=$(git rev-parse origin/master)
 
-
 # If this commit matches an exact tag, or HEAD is origin/master, or the commit
 # message includes /build-docker, kick off the docker step.
 if git describe --tags --exact-match || [[ "$CURRENT_SHA" == "$MASTER_SHA" ]] || [[ "$BUILDKITE_MESSAGE" =~ /build-docker ]]; then
