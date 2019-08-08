@@ -20,7 +20,9 @@ validate-gopath:
 	@stat $(GOPATH) > /dev/null
 
 install-vendor: install-glide validate-gopath
-	@echo Installing glide deps
+	# collapse in buildkite by default
+	@echo "--- Install glide deps"
+	@echo "Installing glide deps"
 	PATH=$(GOPATH)/bin:$(PATH) GOPATH=$(GOPATH) glide --debug install
 
 install-glide:
