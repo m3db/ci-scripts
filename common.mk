@@ -21,7 +21,7 @@ codecov_push         		:= .ci/codecov.sh
 
 # test_exit_code is zero if test.failed doesn't exist, 1 if it does.
 define test_exit_code
-	$(shell ! test -f $(test_failed_file); echo $$?)
+	$(shell ! test -f $(or $(1),$(test_failed_file)) ; echo $$?)
 endef
 
 .PHONY: validate-gopath
@@ -115,8 +115,19 @@ test-base-ci-unit: test-base
 	@PATH=$(GOPATH)/bin:$(PATH) which goveralls > /dev/null || go get -u -f github.com/m3db/goveralls
 	PATH=$(GOPATH)/bin:$(PATH) goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
-test-base-ci-integration:
-	$(test_ci_integration) $(coverfile) $(coverage_exclude) | tee $(test_log) || \
-		touch $(test_failed_file)
-	go-junit-report < $(test_log) > $(test_integration_junit_xml)
-	@exit $(call test_exit_code)
+test-base-ci-integration: test-base-ci-integration-all
+
+# test-base-ci-integration runs integration tests with outputs labeled by the
+# provided suffix (captured by the wildcard '%'). It generates:
+#   $*_test.log
+#   $*_test_integration_junit.xml
+test-base-ci-integration-%: install-go-junit-report
+	$(eval integration_test_log := $*_$(test_log))
+	$(eval integration_test_failed_file := $*_$(test_failed_file))
+	$(test_ci_integration) $(coverfile) $(coverage_exclude) | tee $(integration_test_log) || \
+		touch integration_test_failed_file
+
+	go-junit-report < $(integration_test_log) > $*_$(test_integration_junit_xml)
+	@exit $(call test_exit_code,$(integration_test_failed_file))
+
+	# TODO: JUnit report here as well; our current approach
