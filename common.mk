@@ -16,8 +16,13 @@ test_log             		:= test.log
 test_junit_xml              := test_junit.xml
 test_big_junit_xml          := test_big_junit.xml
 test_integration_junit_xml  := test_integration_junit.xml
+test_failed_file            := test.failed
 codecov_push         		:= .ci/codecov.sh
 
+# test_exit_code is zero if test.failed doesn't exist, 1 if it does.
+define test_exit_code
+	$(shell ! test -f $(test_failed_file); echo $$?)
+endef
 
 .PHONY: validate-gopath
 validate-gopath:
@@ -83,12 +88,17 @@ install-go-junit-report:
 	@PATH=$(GOPATH)/bin:$(PATH) which go-junit-report > /dev/null || (echo "go-junit-report install failed" && exit 1)
 
 test-base: install-go-junit-report
-	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log)
+	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log) || \
+		touch $(test_failed_file)
 	go-junit-report < $(test_log) > $(test_junit_xml)
+	@exit $(call test_exit_code)
 
-test-big-base:
-	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)
+test-big-base: install-go-junit-report
+	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)\
+		|| touch $(test_failed_file)
 	go-junit-report < $(test_log) > $(test_big_junit_xml)
+	@exit $(call test_exit_code)
+
 
 test-base-html: test-base
 	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (PATH=$(GOPATH)/bin:$(PATH) which open && open $(coverage_html))
@@ -106,6 +116,7 @@ test-base-ci-unit: test-base
 	PATH=$(GOPATH)/bin:$(PATH) goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
 test-base-ci-integration:
-	$(test_ci_integration) $(coverfile) $(coverage_exclude) | tee $(test_log)
+	$(test_ci_integration) $(coverfile) $(coverage_exclude) | tee $(test_log) || \
+		touch $(test_failed_file)
 	go-junit-report < $(test_log) > $(test_integration_junit_xml)
-
+	@exit $(call test_exit_code)
