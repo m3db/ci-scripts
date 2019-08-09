@@ -5,12 +5,10 @@ source "$(dirname $0)/variables.sh"
 
 TARGET=${1:-cover.out}
 EXCLUDE_FILE=${2:-.excludecoverage}
-LOG=${3:-test.log}
 SRC_ROOT=${SRC_ROOT:-.}
 
 rm $TARGET &>/dev/null || true
 echo "mode: count" > $TARGET
-echo "" > $LOG
 
 DIRS=""
 for DIR in $SRC;
@@ -38,7 +36,7 @@ for DIR in $DIRS; do
     TESTS=$(echo ${TESTS} | tr ' ' '|')
     go test $TEST_FLAGS -tags big -run $TESTS -coverprofile $PROFILE_BIG      \
       -coverpkg $(go list ./$SRC_ROOT/... | grep -v /vendor/ | paste -sd, -)  \
-      $DIR | tee $LOG
+      $DIR
     BIG_TEST_EXIT=${PIPESTATUS[0]}
     # Only set TEST_EXIT if its already zero to be prevent overwriting non-zero exit codes
     if [ "$TEST_EXIT" = "0" ]; then
