@@ -1,18 +1,22 @@
 GOPATH=$(shell eval $$(go env | grep GOPATH) && echo $$GOPATH)
-metalinter_version   := v2.0.0
-m3linters_version    := 3414a73aff9004cba439f1657dcd70c514d2b67a
-genclean_version     := 3414a73aff9004cba439f1657dcd70c514d2b67a
-genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
-coverfile            := cover.out
-coverage_exclude     := .excludecoverage
-coverage_html        := coverage.html
-convert_test_data    := .ci/convert-test-data.sh
-test                 := .ci/test-cover.sh
-test_big             := .ci/test-big-cover.sh
-test_one_integration := .ci/test-one-integration.sh
-test_ci_integration  := .ci/test-integration.sh
-test_log             := test.log
-codecov_push         := .ci/codecov.sh
+metalinter_version   		:= v2.0.0
+m3linters_version    		:= 3414a73aff9004cba439f1657dcd70c514d2b67a
+genclean_version     		:= 3414a73aff9004cba439f1657dcd70c514d2b67a
+genny_version        		:= 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
+go-junit-report_version 	:= af01ea7f8024089b458d804d5cdf190f962a9a0c
+coverfile            		:= cover.out
+coverage_exclude     		:= .excludecoverage
+coverage_html        		:= coverage.html
+convert_test_data    		:= .ci/convert-test-data.sh
+test                 		:= .ci/test-cover.sh
+test_big             		:= .ci/test-big-cover.sh
+test_one_integration 		:= .ci/test-one-integration.sh
+test_ci_integration  		:= .ci/test-integration.sh
+test_log             		:= test.log
+test_junit_xml              := test_junit.xml
+test_big_junit_xml          := test_big_junit.xml
+test_integration_junit_xml  := test_integration_junit.xml
+codecov_push         		:= .ci/codecov.sh
 
 
 .PHONY: validate-gopath
@@ -71,11 +75,20 @@ install-generics-bin:
 		go install)
 	@PATH=$(GOPATH)/bin:$(PATH) which genny > /dev/null || (echo "genny install failed" && exit 1)
 
-test-base:
+install-go-junit-report:
+	@PATH=$(GOPATH)/bin:$(PATH) which go-junit-report > /dev/null || (go get -u github.com/jstemmer/go-junit-report && \
+		cd $(GOPATH)/src/github.com/jstemmer/go-junit-report/ && \
+		git checkout $(go-junit-report_version) && \
+		go install)
+	@PATH=$(GOPATH)/bin:$(PATH) which go-junit-report > /dev/null || (echo "go-junit-report install failed" && exit 1)
+
+test-base: install-go-junit-report
 	$(test) $(coverfile) $(coverage_exclude) | tee $(test_log)
+	go-junit-report < $(test_log) > $(test_junit_xml)
 
 test-big-base:
 	$(test_big) $(coverfile) $(coverage_exclude) | tee $(test_log)
+	go-junit-report < $(test_log) > $(test_big_junit_xml)
 
 test-base-html: test-base
 	gocov convert $(coverfile) | gocov-html > $(coverage_html) && (PATH=$(GOPATH)/bin:$(PATH) which open && open $(coverage_html))
@@ -93,4 +106,6 @@ test-base-ci-unit: test-base
 	PATH=$(GOPATH)/bin:$(PATH) goveralls -coverprofile=$(coverfile) -service=semaphore || (echo -e "Coveralls failed" && exit 1)
 
 test-base-ci-integration:
-	$(test_ci_integration) $(coverfile) $(coverage_exclude)
+	$(test_ci_integration) $(coverfile) $(coverage_exclude) | tee $(test_log)
+	go-junit-report < $(test_log) > $(test_integration_junit_xml)
+

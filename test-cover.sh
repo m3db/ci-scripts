@@ -31,7 +31,8 @@ echo "test-cover begin: concurrency $NPROC"
 
 PROFILE_REG="profile_reg.tmp"
 
-TEST_FLAGS="-v -race -timeout 5m -covermode atomic"
+TO_RUN="^TestFooFail$"
+TEST_FLAGS="-v -race -run "${to_run}" -timeout 5m -covermode atomic"
 go run $CI_DIR/.ci/gotestcover/gotestcover.go $TEST_FLAGS -coverprofile $PROFILE_REG -parallelpackages $NPROC $TESTS | tee $LOG
 TEST_EXIT=${PIPESTATUS[0]}
 
