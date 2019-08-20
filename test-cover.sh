@@ -31,7 +31,7 @@ PROFILE_REG="profile_reg.tmp"
 
 echo 'mode: atomic' > "$TARGET"
 echo "" > "$LOG"
-go list ./... | xargs -P $NPROC -n1 -I{} sh -c "go test -v -race -timeout 5m -covermode=atomic -coverprofile=${PROFILE_REG} {} && tail -n +2 $PROFILE_REG >> $TARGET"
+<<<"$TESTS" xargs -P $NPROC -n1 -I{} sh -c "go test -v -race -timeout 5m -covermode=atomic -coverprofile=${PROFILE_REG} {} && tail -n +2 $PROFILE_REG >> $TARGET"
 TEST_EXIT=$?
 
 filter_cover_profile $PROFILE_REG "$TARGET" "$EXCLUDE_FILE"
