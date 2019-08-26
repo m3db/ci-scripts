@@ -31,12 +31,24 @@ PROFILE_REG="profile_reg.tmp"
 
 echo 'mode: atomic' > "$TARGET"
 echo "" > "$LOG"
-<<<"$TESTS" xargs -P $NPROC -n1 -I{} sh -c "go test -v -race -timeout 5m -covermode=atomic -coverprofile=${PROFILE_REG} {} && tail -n +2 $PROFILE_REG >> $TARGET"
+
+# Temporary file to store cover results individually before merging (avoid race
+# in printing outputs and clobbering test results).
+COVER_TMPDIR=cover.tmp
+mkdir -p $COVER_TMPDIR
+
+# Output each package's coverage result to a "friendly" file name (anything
+# that's not a character gets changed to '_'). Then combine those serially into
+# one result to not corrupt test output. Map reduce in bash, yolo.
+<<<"$TESTS" xargs -P $NPROC -n1 -I{} sh -c "NAME=\$(<<<{} sed 's/[^a-z]/_/g'); go test -v -race -timeout 5m -covermode=atomic -coverprofile=${COVER_TMPDIR}/\$NAME {} | tee -a $LOG"
 TEST_EXIT=$?
 
+find "$COVER_TMPDIR" -type f | while read -r F; do
+  tail -n +2 "$F" >> "$PROFILE_REG"
+done
+
 filter_cover_profile $PROFILE_REG "$TARGET" "$EXCLUDE_FILE"
+rm -rf "$COVER_TMPDIR"
 
-find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
-echo "test-cover result: $TEST_EXIT"
-
+echo "test-cover result (results in $TARGET): $TEST_EXIT"
 exit "$TEST_EXIT"
