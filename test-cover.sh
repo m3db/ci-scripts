@@ -40,7 +40,7 @@ mkdir -p $COVER_TMPDIR
 # Output each package's coverage result to a "friendly" file name (anything
 # that's not a character gets changed to '_'). Then combine those serially into
 # one result to not corrupt test output. Map reduce in bash, yolo.
-<<<"$TESTS" xargs -P $NPROC -n1 -I{} sh -c "NAME=\$(<<<{} sed 's/[^a-z]/_/g'); go test -v -race -timeout 5m -covermode=atomic -coverprofile=${COVER_TMPDIR}/\$NAME {} | tee -a $LOG"
+<<<"$TESTS" xargs -P $NPROC -n1 -I{} sh -c "NAME=\$(echo {} | sed 's/[^a-z]/_/g'); go test -v -race -timeout 5m -covermode=atomic -coverprofile=${COVER_TMPDIR}/\$NAME {} | tee -a $LOG"
 TEST_EXIT=$?
 
 find "$COVER_TMPDIR" -type f | while read -r F; do
