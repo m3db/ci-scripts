@@ -12,7 +12,7 @@ if [ "$SRC_ROOT" != "" ]; then
 fi
 
 find_dirs() {
-  find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor/*' -type d
+  find $FIND_ROOT -maxdepth 10 -not -path '*/.git*' -not -path '*/.ci*' -not -path '*/_*' -not -path '*/vendor*' -not -path '*/ui*' -not -path '*/integration*' -type d
 }
 
 BASE_SRC=$(find_dirs)
