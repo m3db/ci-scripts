@@ -61,7 +61,7 @@ if git describe --tags --exact-match; then
   TAG=$(git describe --tags --exact-match)
   TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG}"
   # Don't tag latest if this is a pre-release.
-  if ! <<<"$TAG" greq -Eq "alpha|beta|rc"; then
+  if ! <<<"$TAG" grep -Eq "alpha|beta|rc"; then
     TAGS_TO_PUSH="${TAGS_TO_PUSH} latest"
   fi
 fi
