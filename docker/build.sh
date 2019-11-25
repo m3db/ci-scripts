@@ -59,7 +59,11 @@ TAGS_TO_PUSH=""
 # If this commit matches an exact tag, push a tagged build and "latest".
 if git describe --tags --exact-match; then
   TAG=$(git describe --tags --exact-match)
-  TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG} latest"
+  TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG}"
+  # Don't tag latest if this is a pre-release.
+  if ! <<<"$TAG" grep -Eq "alpha|beta|rc"; then
+    TAGS_TO_PUSH="${TAGS_TO_PUSH} latest"
+  fi
 fi
 
 # If this commit says to do a docker build, push a tag with the branch name.
