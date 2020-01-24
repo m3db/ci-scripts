@@ -1,11 +1,11 @@
 #!/bin/bash
-set -ex
+set -e
 
 source "$(dirname $0)/variables.sh"
 
 function bk_log() {
   if [[ "${BUILDKITE}" == "true" ]]; then
-    echo "$1"
+    echo "--- $1"
   fi
 }
 
@@ -36,7 +36,7 @@ fi
 # spaces.
 NPROC=${NPROC// /}
 
-bk_log "--- :golang: Running tests and coverage"
+bk_log ":golang: Running tests and coverage"
 echo "test-cover begin: concurrency $NPROC"
 
 PROFILE_REG="profile_reg.tmp"

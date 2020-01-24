@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -exo pipefail
+set -eo pipefail
 
 # shellcheck disable=SC2001
 DIR=$(<<<"$1" sed 's@[/|\.]@_@g')
