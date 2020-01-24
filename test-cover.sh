@@ -3,6 +3,12 @@ set -ex
 
 source "$(dirname $0)/variables.sh"
 
+function bk_log() {
+  if [[ "${BUILDKITE}" == "true" ]]; then
+    echo "$1"
+  fi
+}
+
 TARGET=${1:-profile.cov}
 EXCLUDE_FILE=${2:-.excludecoverage}
 LOG=${3:-test.log}
@@ -30,6 +36,7 @@ fi
 # spaces.
 NPROC=${NPROC// /}
 
+bk_log "--- :golang: Running tests and coverage"
 echo "test-cover begin: concurrency $NPROC"
 
 PROFILE_REG="profile_reg.tmp"
@@ -73,6 +80,7 @@ filter_cover_profile $PROFILE_REG "$TARGET" "$EXCLUDE_FILE"
 find . -not -path '*/vendor/*' | grep \\.tmp$ | xargs -I{} rm {}
 
 if [[ -n "$FAILED_PKGS" ]]; then
+  bk_log ":bk-status-failed: encountered package failure(s)"
   echo "packages with failures: [${FAILED_PKGS}]"
 fi
 
