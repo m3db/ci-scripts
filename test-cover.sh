@@ -48,13 +48,12 @@ trap cleanup EXIT
 echo 'mode: atomic' > "$TARGET"
 echo "" > "$LOG"
 
-TEST_EXIT=0
 # In parallel, write each package's coverage information to a package-specific
-# file. Sanitize each package path to a file-friendly name. Check in an if
-# statement to not trigger -e exit.
-if ! <<<"$TESTS" xargs -P "$NPROC" -n1 .ci/process-cover-package.sh; then
-  TEST_EXIT=$?
-fi
+# file. Sanitize each package path to a file-friendly name.
+set +e
+<<<"$TESTS" xargs -P "$NPROC" -n1 .ci/process-cover-package.sh
+TEST_EXIT=$?
+set -e
 
 FAILED_PKGS=""
 
