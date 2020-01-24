@@ -34,10 +34,8 @@ echo "test-cover begin: concurrency $NPROC"
 
 PROFILE_REG="profile_reg.tmp"
 
-# Ideally we'd use $(mktemp -d), but xargs -I{} limits resulting strings to 255
-# bytes and some systems (such as MacOS) generate insanely long tmpdir names.
-# This makes sure we have better control of the arg length.
-export COVERTMP="covertmp"
+export COVERTMP
+COVERTMP="$(mktemp -d)"
 rm -rf "$COVERTMP"
 mkdir -p "$COVERTMP"
 
@@ -52,11 +50,7 @@ echo "" > "$LOG"
 
 # In parallel, write each package's coverage information to a package-specific
 # file. Sanitize each package path to a file-friendly name.
-#
-# GNU xargs only takes newlines as separator if using -I. Can get around this
-# with `-d '\n'`, but that doesn't work on BSD (+MacOS) xargs. Replacing spaces
-# with newlines is cross-platform friendly.
-echo "$TESTS" | tr ' ' '\n' | xargs -P "$NPROC" -n1 .ci/process-cover-package.sh
+<<<"$TESTS" xargs -P "$NPROC" -n1 .ci/process-cover-package.sh
 
 TEST_EXIT=$?
 
