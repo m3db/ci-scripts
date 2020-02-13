@@ -18,12 +18,19 @@ echo "mode: atomic" > $TARGET
 echo "" > $LOG
 
 DIRS=""
-for DIR in $SRC;
-do
-  if ls $DIR/*_test.go &> /dev/null; then
-    DIRS="$DIRS $DIR"
-  fi
-done
+# Depending on what version of Go is being used, callers may wish to use "go
+# list" or find target directories by looking for test files.
+if [[ "$TESTDIR_SOURCE_TYPE" == "golist" ]]; then
+  DIRS=$(go list ./...)
+else
+  for DIR in $SRC;
+  do
+    if ls $DIR/*_test.go &> /dev/null; then
+      DIRS="$DIRS $DIR"
+    fi
+  done
+fi
+
 
 # defaults to all DIRS if the split vars are unset
 pick_subset "$DIRS" TESTS $SPLIT_IDX $TOTAL_SPLITS
