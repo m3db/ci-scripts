@@ -13,7 +13,10 @@ CONFIG=${1:-"docker/images.json"}
 
 function cleanup() {
   docker system prune -f
-  find /tmp -name '*m3-docker' -print0 | xargs -0 rm -fv
+  # We may not have permissions to clean /tmp in some environments.
+  if [[ -n "$DO_TMP_CLEANUP" ]]; then
+    find /tmp -name '*m3-docker' -print0 | xargs -0 rm -fv
+  fi
 }
 
 trap cleanup EXIT
