@@ -13,7 +13,12 @@ if [[ -n "$GO_BUILD_TAGS" ]]; then
   TAGS=("-tags" "${GO_BUILD_TAGS}")
 fi
 
-if ! go test "${TAGS[@]}" -v -race -gcflags=all=-d=checkptr=0 -timeout 5m -covermode=atomic -coverprofile="$OUT" "$1"; then
+GCFLAGS=""
+if [ "$DISABLE_CHECKPTR" = "true" ]; then
+    GCFLAGS="-gcflags=all=-d=checkptr=0"
+fi
+
+if ! go test "${TAGS[@]}" -v -race $GCFLAGS -timeout 5m -covermode=atomic -coverprofile="$OUT" "$1"; then
   echo "FAILED $1" > "$OUT"
   exit 1
 fi
