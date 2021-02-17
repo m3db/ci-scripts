@@ -11,7 +11,8 @@ INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
 COVERMODE=atomic
 SCRATCH_FILE=${COVERFILE}.tmp
 SRC_ROOT=${SRC_ROOT:-.}
-TEST_OPTS=${TEST_OPTS:-}
+RACE=${RACE:-""}
+TEST_OPTS=""
 
 if [ ! -d "${SRC_ROOT}/${DIR}" ]; then
   echo "No integrations tests found"
@@ -33,6 +34,10 @@ then
   # NB: need to do this in two steps or the go compiler compiles the partial file and is :(
   generate_dummy_coverage_file integration integration > coverage_imports_file.out
   mv coverage_imports_file.out ${DUMMY_FILE_PATH}
+fi
+
+if [ -n "${RACE}" ]; then
+  TEST_OPTS="${TEST_OPTS} -race"
 fi
 
 # compile the integration test binary
