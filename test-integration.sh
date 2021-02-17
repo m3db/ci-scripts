@@ -11,6 +11,8 @@ INTEGRATION_TIMEOUT=${INTEGRATION_TIMEOUT:-10m}
 COVERMODE=atomic
 SCRATCH_FILE=${COVERFILE}.tmp
 SRC_ROOT=${SRC_ROOT:-.}
+RACE=${RACE:-""}
+TEST_OPTS=()
 
 if [ ! -d "${SRC_ROOT}/${DIR}" ]; then
   echo "No integrations tests found"
@@ -34,8 +36,12 @@ then
   mv coverage_imports_file.out ${DUMMY_FILE_PATH}
 fi
 
+if [ -n "${RACE}" ]; then
+  TEST_OPTS+=("-race")
+fi
+
 # compile the integration test binary
-go test -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
+go test "${TEST_OPTS[@]}" -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
   -test.coverpkg $(go list ./$SRC_ROOT/... |  grep -v /vendor/ | paste -sd, -) ${SRC_ROOT}/${DIR}
 
 INTEGRATION_TEST="./integration.test"
