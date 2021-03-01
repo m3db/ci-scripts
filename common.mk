@@ -1,5 +1,4 @@
 GOPATH=$(shell eval $$(go env | grep GOPATH) && echo $$GOPATH)
-metalinter_version   := v2.0.0
 m3linters_version    := 3414a73aff9004cba439f1657dcd70c514d2b67a
 genclean_version     := 3414a73aff9004cba439f1657dcd70c514d2b67a
 genny_version        := 9d8700bcc567cd22ea2ef42ce5835a9c80296c4a
@@ -38,13 +37,6 @@ prep-semaphore:
 install-ci:
 	make prep-semaphore # test to see if running on SEMAPHORE instance
 	make install-vendor
-
-install-metalinter:
-	@PATH=$(GOPATH)/bin:$(PATH) which gometalinter > /dev/null || (go get -u github.com/alecthomas/gometalinter && \
-		cd $(GOPATH)/src/github.com/alecthomas/gometalinter && \
-		git checkout $(metalinter_version) && \
-		go install && gometalinter --install)
-	@PATH=$(GOPATH)/bin:$(PATH) which gometalinter > /dev/null || (echo "gometalinter install failed" && exit 1)
 
 install-linter-badtime:
 	@PATH=$(GOPATH)/bin:$(PATH) which badtime > /dev/null || (go get -u github.com/m3db/build-tools/linters/badtime && \
