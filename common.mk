@@ -12,6 +12,7 @@ test_one_integration := .ci/test-one-integration.sh
 test_ci_integration  := .ci/test-integration.sh
 test_log             := test.log
 codecov_push         := .ci/codecov.sh
+export PANIC_ON_INVARIANT_VIOLATED = true
 
 
 .PHONY: validate-gopath
