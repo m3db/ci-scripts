@@ -41,8 +41,8 @@ if [ -n "${RACE}" ]; then
 fi
 
 # compile the integration test binary
-go test "${TEST_OPTS[@]}" -test.c -test.tags=${TAGS} -test.covermode ${COVERMODE} \
-  -test.coverpkg $(go list ./$SRC_ROOT/... |  grep -v /vendor/ | paste -sd, -) ${SRC_ROOT}/${DIR}
+go test "${TEST_OPTS[@]}" -c -tags ${TAGS} -covermode ${COVERMODE} \
+  -coverpkg $(go list ./$SRC_ROOT/... |  grep -v /vendor/ | paste -sd, -) ${SRC_ROOT}/${DIR}
 
 INTEGRATION_TEST="./integration.test"
 
