@@ -4,6 +4,8 @@
 # - "master" will always point to the most recent build on master
 # - "latest" will refer to the latest tagged release
 # - Each release "foo" will have a tag "foo"
+# - If PUSH_SHA_TAG is set to true, the image will be tagged with the first
+#   8 characters of the SHA from the commit the image was built from.
 #
 # This script is a noop if HEAD is not origin/master OR tagged.
 
@@ -37,12 +39,12 @@ function push_image() {
 }
 
 function do_jq() {
-  <"$CONFIG" jq -er "$1"
+  jq <"$CONFIG" -er "$1"
 }
 
 # Allow null key values (useful for optional fields)
 function do_jq_null() {
-  <"$CONFIG" jq -r "$1"
+  jq <"$CONFIG" -r "$1"
 }
 
 if [[ ! -f "$CONFIG" ]]; then
@@ -64,7 +66,7 @@ if git describe --tags --exact-match; then
   TAG=$(git describe --tags --exact-match)
   TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG}"
   # Don't tag latest if this is a pre-release.
-  if ! <<<"$TAG" grep -Eq "alpha|beta|rc"; then
+  if ! grep <<<"$TAG" -Eq "alpha|beta|rc"; then
     TAGS_TO_PUSH="${TAGS_TO_PUSH} latest"
   fi
 fi
@@ -72,7 +74,7 @@ fi
 # If this commit says to do a docker build, push a tag with the branch name.
 if [[ "$BUILDKITE_MESSAGE" =~ /build-docker ]]; then
   # Sanitize the branch name (any non-alphanum char gets turned into a '_').
-  TAG=$(<<<"$BUILDKITE_BRANCH" sed 's/[^a-z|0-9]/_/g')
+  TAG=$(sed <<<"$BUILDKITE_BRANCH" 's/[^a-z|0-9]/_/g')
   TAGS_TO_PUSH="${TAGS_TO_PUSH} ${TAG}"
 fi
 
@@ -82,6 +84,13 @@ MASTER_SHA=$(git rev-parse origin/master)
 # If the current commit is exactly origin/master, push a tag for "master".
 if [[ "$CURRENT_SHA" == "$MASTER_SHA" ]]; then
   TAGS_TO_PUSH="${TAGS_TO_PUSH} master"
+fi
+
+# Push a tag for with the first 8 characters of the SHA of the commit if the
+# caller has set the PUSH_SHA_TAG environment variable to true.
+if [[ "${PUSH_SHA_TAG:-false}" == "true" ]]; then
+  CURRENT_SHA_SHORT=$(git rev-parse --short=8 HEAD)
+  TAGS_TO_PUSH="${TAGS_TO_PUSH} ${CURRENT_SHA_SHORT}"
 fi
 
 if [[ -z "$TAGS_TO_PUSH" ]]; then
