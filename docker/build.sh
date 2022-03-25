@@ -98,7 +98,7 @@ for IMAGE in $IMAGES; do
   # Do one build, then push all the necessary tags.
   log_info "building $NAME ($IMAGE)"
   docker buildx build \
-    --iidfile "$SHA_TMP"
+    --iidfile "$SHA_TMP" \
     --builder multi-platform-builder \
     --platform linux/amd64,linux/arm64 \
     -f "$(do_jq ".images[\"${IMAGE}\"].dockerfile")" .
