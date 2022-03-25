@@ -90,6 +90,12 @@ fi
 
 log_info "will push [$TAGS_TO_PUSH]"
 
+# Create multi-platform-builder
+if ! (docker buildx ls | fgrep multi-platform-builder); then 
+  echo "creating docker builder: multi-platform-builder"
+  docker buildx create --name multi-platform-builder
+fi
+
 for IMAGE in $IMAGES; do
   NAME=$(do_jq ".images[\"${IMAGE}\"].name")
   TAG_SUFFIX=$(do_jq_null ".images[\"${IMAGE}\"].tag_suffix")
