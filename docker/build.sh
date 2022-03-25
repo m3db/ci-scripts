@@ -91,9 +91,12 @@ fi
 log_info "will push [$TAGS_TO_PUSH]"
 
 # Create multi-platform-builder
+log_info "check if need to create docker builder: multi-platform-builder"
 if ! (docker buildx ls | fgrep multi-platform-builder); then 
-  echo "creating docker builder: multi-platform-builder"
+  log_info "creating docker builder: multi-platform-builder"
   docker buildx create --name multi-platform-builder
+else
+  log_info "do not need to create docker builder: multi-platform-builder"
 fi
 
 for IMAGE in $IMAGES; do
