@@ -47,20 +47,20 @@ function generate_dummy_coverage_file() {
   local package_name=$1
   local build_tag=$2
   go list ./$FIND_ROOT/... | grep -v vendor | grep -v "\/main$" | grep -v "\/${package_name}" >repo_packages.out
-  INPUT_FILE=./repo_packages.out python <<END
+  INPUT_FILE=./repo_packages.out python3 <<END
 import os
 input_file_path = os.environ['INPUT_FILE']
 input_file = open(input_file_path)
-print '// +build ${build_tag}'
-print
-print 'package ${package_name}'
-print
-print 'import ('
+print('// +build ${build_tag}')
+print()
+print('package ${package_name}')
+print()
+print('import (')
 for line in input_file.readlines():
     line = line.strip()
-    print '\t _ "%s"' % line
-print ')'
-print
+    print('\t _ "%s"' % line)
+print(')')
+print()
 END
 }
 
