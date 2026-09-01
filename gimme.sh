@@ -56,8 +56,8 @@ set -o pipefail
 
 [[ ${GIMME_DEBUG} ]] && set -x
 
-readonly GIMME_VERSION="v1.5.0"
-readonly GIMME_COPYRIGHT="Copyright (c) 2015-2018 gimme contributors"
+readonly GIMME_VERSION="v1.5.4"
+readonly GIMME_COPYRIGHT="Copyright (c) 2015-2020 gimme contributors"
 readonly GIMME_LICENSE_URL="https://raw.githubusercontent.com/travis-ci/gimme/${GIMME_VERSION}/LICENSE"
 export GIMME_VERSION
 export GIMME_COPYRIGHT
@@ -287,7 +287,10 @@ _extract() {
 
 # _setup_bootstrap
 _setup_bootstrap() {
-	local versions=("1.10" "1.9" "1.8" "1.7" "1.6" "1.5" "1.4")
+	# NB: Go 1.21 changed the naming of a series' first release from "go1.21"
+	# to "go1.21.0", so entries from 1.21 up must carry the explicit ".0" or
+	# the tarball URL 404s.
+	local versions=("1.27.0" "1.26.0" "1.25.0" "1.24.0" "1.23.0" "1.22.0" "1.21.0" "1.20" "1.19" "1.18" "1.17" "1.16" "1.15" "1.14" "1.13" "1.12" "1.11" "1.10" "1.9" "1.8" "1.7" "1.6" "1.5" "1.4")
 
 	# try existing
 	for v in "${versions[@]}"; do
@@ -329,8 +332,8 @@ _compile() {
 		export CC_FOR_TARGET="${GIMME_CC_FOR_TARGET}"
 
 		local make_log="${1}/make.${GOOS}.${GOARCH}.log"
-		if [[ "${GIMME_DEBUG}" -gt "1" ]]; then
-			./make.bash 2>&1 | tee "${make_log}" 1>&2 || return 1
+		if [[ "${GIMME_DEBUG}" -ge "2" ]]; then
+			./make.bash -v 2>&1 | tee "${make_log}" 1>&2 || return 1
 		else
 			./make.bash &>"${make_log}" || return 1
 		fi
@@ -361,7 +364,7 @@ _env() {
 
 	# if we try to run a Darwin binary on Linux, we need to fail so 'auto' can fallback to cross-compiling from source
 	# automatically
-	GOROOT="${1}" "${1}/bin/go" version &>/dev/null || return 1
+	GOROOT="${1}" GOFLAGS="" "${1}/bin/go" version &>/dev/null || return 1
 
 	# https://twitter.com/davecheney/status/431581286918934528
 	# we have to GOROOT sometimes because we use official release binaries in unofficial locations :(
@@ -591,6 +594,10 @@ _resolve_version() {
 		_get_curr_stable
 		return 0
 		;;
+	oldstable)
+		_get_old_stable
+		return 0
+		;;
 	tip)
 		echo "tip"
 		return 0
@@ -613,16 +620,16 @@ _resolve_version() {
 	local base="${1%.x}"
 	local ver last='' known
 	known="$(_update_remote_known_list_if_needed)" # will be version-sorted
+	if [[ ! "${base}" =~ ^[0-9.]+$ ]]; then
+		warn "resolve pattern '${base}.x' invalid for .x finding"
+		return 2
+	fi
+	# The `.x` is optional; "1.10" matches "1.10.x"
+	local search="^${base//./\\.}(\\.[0-9.]+)?\$"
 	# avoid regexp attacks
 	while read -r ver; do
-		case "${ver}" in
-		${base})
-			last="${ver}"
-			;;
-		${base}.*)
-			last="${ver}"
-			;;
-		esac
+		[[ "${ver}" =~ $search ]] || continue
+		last="${ver}"
 	done <"$known"
 	if [[ -n "${last}" ]]; then
 		echo "${last}"
@@ -648,6 +655,16 @@ _get_curr_stable() {
 	cat "${stable}"
 }
 
+_get_old_stable() {
+	local oldstable="${GIMME_VERSION_PREFIX}/oldstable"
+
+	if _file_older_than_secs "${oldstable}" 86400; then
+		_update_oldstable "${oldstable}"
+	fi
+
+	cat "${oldstable}"
+}
+
 _update_stable() {
 	local stable="${1}"
 	local url="https://golang.org/VERSION?m=text"
@@ -655,6 +672,16 @@ _update_stable() {
 	_do_curl "${url}" "${stable}"
 	sed -i.old -e 's/^go\(.*\)/\1/' "${stable}"
 	rm -f "${stable}.old"
+}
+
+_update_oldstable() {
+	local oldstable="${1}"
+	local oldstable_x
+	oldstable_x=$(_get_curr_stable | awk -F. '{
+		$2--;
+		print $1 "." $2 "." "x"
+	}')
+	_resolve_version "${oldstable_x}" >"${oldstable}"
 }
 
 _last_mod_timestamp() {
@@ -763,7 +790,7 @@ _to_goarch() {
 : "${GIMME_GO_GIT_REMOTE:=https://github.com/golang/go.git}"
 : "${GIMME_TYPE:=auto}" # 'auto', 'binary', 'source', or 'git'
 : "${GIMME_BINARY_OSX:=osx10.8}"
-: "${GIMME_DOWNLOAD_BASE:=https://storage.googleapis.com/golang}"
+: "${GIMME_DOWNLOAD_BASE:=https://dl.google.com/go}"
 : "${GIMME_LIST_KNOWN:=https://golang.org/dl}"
 : "${GIMME_KNOWN_CACHE_MAX:=10800}"
 
@@ -777,7 +804,7 @@ case "${GIMME_VERSION_PREFIX}" in
 	;;
 esac
 
-if [[ "${GIMME_OS}" == mingw* ]]; then
+case "${GIMME_OS}" in mingw* | msys_nt*)
 	# Minimalist GNU for Windows
 	GIMME_OS='windows'
 
@@ -786,7 +813,8 @@ if [[ "${GIMME_OS}" == mingw* ]]; then
 	else
 		GIMME_ARCH="amd64"
 	fi
-fi
+	;;
+esac
 
 force_install=0
 force_known_update=0
@@ -877,9 +905,10 @@ arm64) ;;
 arm*) GIMME_HOSTARCH=arm ;;
 esac
 
-if [[ "${GIMME_GO_VERSION}" == "stable" ]]; then
-	GIMME_GO_VERSION=$(_get_curr_stable)
-fi
+case "${GIMME_GO_VERSION}" in
+stable) GIMME_GO_VERSION=$(_get_curr_stable) ;;
+oldstable) GIMME_GO_VERSION=$(_get_old_stable) ;;
+esac
 
 _assert_version_given "$@"
 
@@ -892,6 +921,8 @@ unset GOPATH
 unset GOROOT
 unset CGO_ENABLED
 unset CC_FOR_TARGET
+# GO111MODULE breaks build of Go itself
+unset GO111MODULE
 
 mkdir -p "${GIMME_VERSION_PREFIX}" "${GIMME_ENV_PREFIX}"
 # The envs dir stays small and provides a record of what had been installed
