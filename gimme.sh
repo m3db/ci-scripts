@@ -287,7 +287,10 @@ _extract() {
 
 # _setup_bootstrap
 _setup_bootstrap() {
-	local versions=("1.23" "1.22" "1.21" "1.20" "1.19" "1.18" "1.17" "1.16" "1.15" "1.14" "1.13" "1.12" "1.11" "1.10" "1.9" "1.8" "1.7" "1.6" "1.5" "1.4")
+	# NB: Go 1.21 changed the naming of a series' first release from "go1.21"
+	# to "go1.21.0", so entries from 1.21 up must carry the explicit ".0" or
+	# the tarball URL 404s.
+	local versions=("1.27.0" "1.26.0" "1.25.0" "1.24.0" "1.23.0" "1.22.0" "1.21.0" "1.20" "1.19" "1.18" "1.17" "1.16" "1.15" "1.14" "1.13" "1.12" "1.11" "1.10" "1.9" "1.8" "1.7" "1.6" "1.5" "1.4")
 
 	# try existing
 	for v in "${versions[@]}"; do
