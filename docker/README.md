@@ -12,12 +12,22 @@ M3 docker images are built according to the following policy:
    will point to the latest build on `origin/master` for that image, where `$SHA` is the first 8
    characters of the SHA of the commit.
 
+5. Every tag is a multi-arch manifest built with `docker buildx` for the platforms in
+   `DOCKER_PLATFORMS` (default `linux/amd64,linux/arm64`). Dockerfiles should cross-compile from
+   `$BUILDPLATFORM` using `TARGETOS`/`TARGETARCH` so non-native platforms do not run the whole
+   build under QEMU.
+
 ## Builds
 
 This directory contains the  build scripts for building images according to the above policy, and is intended to be
 called when `ci-scripts` is a submodule of another repo. The script requires an `images.json` to be passed as the first
 arg to `build.sh`, however if unset will default to `docker/images.json`. The script requires a Buildkite docker
 pipeline at `.buildkite/image-release-pipeline.yml` of the calling repo.
+
+The build agent needs `docker buildx` and must be able to run a privileged container: the script
+registers QEMU binfmt handlers via `tonistiigi/binfmt` and creates a `docker-container` builder named
+`DOCKER_BUILDER_NAME` (default `m3-multi-platform-builder`) if one does not exist. Set `DRYRUN=1` to
+build every platform without pushing.
 
 `images.json` has the config for each image, and the base
 repository comes from the environment variable `M3_DOCKER_REPO`. For example, with the following config:

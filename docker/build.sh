@@ -6,12 +6,16 @@
 # - Each release "foo" will have a tag "foo"
 # - If PUSH_SHA_TAG is set to true, the image will be tagged with the first
 #   8 characters of the SHA from the commit the image was built from.
+# - Images are built as multi-arch manifests for the platforms listed in
+#   DOCKER_PLATFORMS (default: linux/amd64,linux/arm64) using docker buildx.
 #
 # This script is a noop if HEAD is not origin/master OR tagged.
 
 set -exo pipefail
 
 CONFIG=${1:-"docker/images.json"}
+PLATFORMS=${DOCKER_PLATFORMS:-"linux/amd64,linux/arm64"}
+BUILDER=${DOCKER_BUILDER_NAME:-"m3-multi-platform-builder"}
 
 function cleanup() {
   docker system prune -f
@@ -27,15 +31,6 @@ trap cleanup EXIT
 # an easy way to find our own messages in the logs.
 function log_info() {
   echo "[INFO] $1"
-}
-
-function push_image() {
-  if [[ -z "$DRYRUN" ]]; then
-    log_info "pushing $1"
-    docker push "$1"
-  else
-    echo "would push $1"
-  fi
 }
 
 function do_jq() {
@@ -97,33 +92,50 @@ if [[ -z "$TAGS_TO_PUSH" ]]; then
   exit 0
 fi
 
-log_info "will push [$TAGS_TO_PUSH]"
+log_info "will push [$TAGS_TO_PUSH] for platforms [$PLATFORMS]"
+
+# Multi-platform builds need the docker-container buildx driver and binfmt
+# handlers for any non-native platform. Register the QEMU handlers (no-op if
+# already present) and create the builder if it does not exist yet.
+docker run --privileged --rm tonistiigi/binfmt --install all
+if ! docker buildx inspect "$BUILDER" >/dev/null 2>&1; then
+  log_info "creating docker builder: $BUILDER"
+  docker buildx create --name "$BUILDER" --driver docker-container --bootstrap
+fi
 
 for IMAGE in $IMAGES; do
   NAME=$(do_jq ".images[\"${IMAGE}\"].name")
   TAG_SUFFIX=$(do_jq_null ".images[\"${IMAGE}\"].tag_suffix")
-  SHA_TMP=$(mktemp --suffix m3-docker)
+  DOCKERFILE=$(do_jq ".images[\"${IMAGE}\"].dockerfile")
 
-  # Do one build, then push all the necessary tags.
-  log_info "building $NAME ($IMAGE)"
-  docker build --iidfile "$SHA_TMP" -f "$(do_jq ".images[\"${IMAGE}\"].dockerfile")" .
-  IMAGE_SHA=$(cat "$SHA_TMP")
-
+  # A multi-platform image cannot be loaded into the local daemon, so instead
+  # of build -> tag -> push we do a single build that pushes every tag.
+  TAG_ARGS=()
   for TAG in $TAGS_TO_PUSH; do
     # jq outputs "null" for null values. If we ever have a tag suffixed named
     # "null" we'll have to change this.
     if [[ "$TAG_SUFFIX" != "null" ]]; then
       TAG="${TAG}-${TAG_SUFFIX}"
     fi
-    FULL_TAG="${REPO}/${NAME}:${TAG}"
-    docker tag "$IMAGE_SHA" "$FULL_TAG"
-    push_image "$FULL_TAG"
+    TAG_ARGS+=(-t "${REPO}/${NAME}:${TAG}")
   done
+
+  if [[ -z "$DRYRUN" ]]; then
+    OUTPUT_ARG="--push"
+  else
+    echo "would push ${TAG_ARGS[*]}"
+    OUTPUT_ARG="--output=type=image,push=false"
+  fi
+
+  log_info "building $NAME ($IMAGE)"
+  docker buildx build \
+    --builder "$BUILDER" \
+    --platform "$PLATFORMS" \
+    --provenance=false \
+    "${TAG_ARGS[@]}" \
+    $OUTPUT_ARG \
+    -f "$DOCKERFILE" .
 done
 
-# Clean up
-CLEANUP_IMAGES=$(docker images | grep "$REPO" | awk '{print $3}' | sort | uniq)
-for IMG in $CLEANUP_IMAGES; do
-  log_info "removing $IMG"
-  docker rmi -f "$IMG"
-done
+# Clean up build cache (images never touch the local daemon with buildx --push).
+docker buildx prune -f --builder "$BUILDER"
